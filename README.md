@@ -1,18 +1,18 @@
 # Mobile_platforms
 
 
-Mobile platforms project
-├── |Server
-│   └──
-│   │Platforms
-│   ├──Platforms_controls_by_server
-│   │  ├──Platfotm_code
-│   │  └──
-│   ├──Platforms_controls_by_joystick
-│   │  ├──Platfotm_code
-│   │  ├──Jpystick_code
-│   │  └──
-│   └──
-└──
+Mobile platforms project <br />
+├── |Server <br />
+│   └── <br />
+│   │Platforms <br />
+│   ├──Platforms_controls_by_server <br />
+│   │  ├──Platfotm_code <br />
+│   │  └── <br />
+│   ├──Platforms_controls_by_joystick <br />
+│   │  ├──Platfotm_code <br />
+│   │  ├──Jpystick_code <br />
+│   │  └── <br />
+│   └── <br />
+└── <br />
 
  
