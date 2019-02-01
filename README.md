@@ -1,6 +1,6 @@
 # Mobile_platforms
 
-
+<pre>
 Mobile platforms project <br />
 ├── |Server <br />
 │   └── <br />
@@ -14,6 +14,7 @@ Mobile platforms project <br />
 │   │  └── <br />
 │   └── <br />
 └── <br />
+</pre>
 
  
  
