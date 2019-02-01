@@ -1,7 +1,7 @@
 # Mobile_platforms
 
 Mobile platforms project - |Server <br />
-&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp|<br />
+___________________________|<br />
 __________|                                             ==============<br />
 __________|Platforms -|Platforms_controls_by_server -   |Platfotm_code<br />
 ______________________|                                 ==============<br />
