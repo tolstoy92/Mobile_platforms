@@ -13,11 +13,8 @@ BLEjoystick Joystick;
 
 void setup() {
 
-	//Joystick.SetupUUID(ServiceUUID,CharacteristicUUID);
 	Joystick.BLEjoystickSetup();
-	//pinMode(JoystickxPin, INPUT_PULLDOWN);
-	//pinMode(JoystickyPin, INPUT_PULLDOWN);
-
+	
 } 
 void loop() {
 

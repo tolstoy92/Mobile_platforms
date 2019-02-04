@@ -11,13 +11,6 @@ static BLERemoteCharacteristic* pRemoteCharacteristic;
 static BLEUUID serviceUUID("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
 static BLEUUID    charUUID("beb5483e-36e1-4688-b7f5-ea07361b26a8");
 
-/*void BLEjoystick::SetupUUID(std::string ServiceUUID, std::string CharUUID) {
-
-serviceUUID = ServiceUUID;
-charUUID = CharUUID;
-
-}*/
-
 static void notifyCallback(BLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
 
     Serial.print("Notify callback for characteristic ");
@@ -91,9 +84,9 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
       pServerAddress = new BLEAddress(advertisedDevice.getAddress());
       doConnect = true;
 
-    } // Found our server
-  } // onResult
-}; // MyAdvertisedDeviceCallbacks
+    } 
+  } 
+}; 
 
 
 void BLEjoystick::BLEjoystickSetup() {
@@ -127,8 +120,7 @@ void BLEjoystick::GetDataFromJoystick(uint8_t JoystickxPin, uint8_t JoystickyPin
     Serial.println(xCoordinate);
     Serial.println(yCoordinate);
     Serial.println("/");
-    //Serial.println(solidStatus);
- 
+  
     pRemoteCharacteristic->writeValue(newValue.c_str());
 
   }

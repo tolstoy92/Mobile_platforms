@@ -90,16 +90,6 @@ void MotorController::controlByJoystick(short xCoord, short yCoord, float reduce
 		rotation(MotorRight, abs(yCoord/reduceSpeed), -yCoord);
 		Serial.println("Moving back");
 	}
-	//else if (xCoord > 500 && yCoord >= -500) {
-		//rotation(MotorLeft,0/*-yCoord/ (1+(log(10+abs(xCoord)))/4)*/, -yCoord);
-		//rotation(MotorRight, yCoord/reduceSpeed, yCoord);
-		//Serial.println("Moving back left");
-	//}
-	//else if (xCoord < -150 && yCoord <= 0) {
-	   // rotation(MotorLeft, -yCoord/reduceSpeed, -yCoord);
-		//rotation(MotorRight,0/*-yCoord/ (1+(log(10+abs(xCoord)))/4)*/, yCoord);
-		//Serial.println("Moving back right");
-	//}
 	else {
 		rotation(MotorLeft, 0, 0);
 		rotation(MotorRight, 0, 0);
