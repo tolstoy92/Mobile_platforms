@@ -7,9 +7,9 @@ from platforms_server.msg import FieldObjects as FieldObjects_msg, ArucoData, Al
 
 class MarkersAnalizer:
     def __init__(self):
-        self.__robots = {}
-        self.__goals = {}
-        self.__obstacles = {}
+        self.robots = {}
+        self.goals = {}
+        self.obstacles = {}
         rospy.init_node("markers_analizer_node")
         self.markers_data_sub = rospy.Subscriber("detected_markers", ArucoData, self.field_objects_callback)
         self.paths_data_sub = rospy.Subscriber("paths_data", AllPathes, self.paths_callback)
@@ -44,16 +44,16 @@ class MarkersAnalizer:
         for path in msg_data.paths_list:
             paths_dict[path.platform_id] = path.path_points
         for id in paths_dict:
-            self.__robots[id].set_path(paths_dict[id])
+            self.robots[id].set_path(paths_dict[id])
 
     def get_robots(self):
-        return self.__robots
+        return self.robots
 
     def get_goals(self):
-        return self.__goals
+        return self.goals
 
     def get_obstacles(self):
-        return self.__obstacles
+        return self.obstacles
 
     def set_pathes(self, pathes):
         self.pathes = pathes
@@ -63,8 +63,10 @@ class MarkersAnalizer:
         tmp_goals_dict = {}
         for key in objects_dict.keys():
             if len(str(key)) == 1:
-                if key not in self.__robots.keys():
-                    self.__robots[key] = Robot(key, objects_dict[key])
+                if key not in self.robots.keys():
+                    self.robots[key] = Robot(key, objects_dict[key])
+                else:
+                    self.robots[key].update_data(objects_dict[key])
             elif len(str(key)) == 3:
                 tmp_goals_dict[key] = Goal(key, objects_dict[key])
             else:
@@ -73,16 +75,16 @@ class MarkersAnalizer:
                 else:
                     tmp_obstacles_dict[key // 10].append(Marker(key//10, objects_dict[key]))
         for key in tmp_obstacles_dict.keys():
-            self.__obstacles[key] = Obstacle(key, tmp_obstacles_dict[key])
+            self.obstacles[key] = Obstacle(key, tmp_obstacles_dict[key])
 
-        if len(self.__robots.keys()):
+        if len(self.robots.keys()):
             self.set_goals_id_from_platform_id(tmp_goals_dict)
         else:
-            self.__goals = tmp_goals_dict
+            self.goals = tmp_goals_dict
 
     def set_goals_id_from_platform_id(self, goals_dict):
-        for (platform_id, goal_id) in list(zip(self.__robots.keys(), goals_dict.keys())):
-            self.__goals[platform_id] = goals_dict[goal_id]
+        for (platform_id, goal_id) in list(zip(self.robots.keys(), goals_dict.keys())):
+            self.goals[platform_id] = goals_dict[goal_id]
 
     def on_position(self, robot_position, target_position):
         on_target_point = False
@@ -94,13 +96,13 @@ class MarkersAnalizer:
         return sqrt((pt2.x - pt1.x) ** 2 + (pt2.y - pt1.y) ** 2)
 
     def clear_robots(self):
-        self.__robots = {}
+        self.robots = {}
 
     def clear_goals(self):
-        self.__goals = {}
+        self.goals = {}
 
     def clear_obstacles(self):
-        self.__obstacles = {}
+        self.obstacles = {}
 
     def clear_fields_objects(self):
         self.clear_goals()

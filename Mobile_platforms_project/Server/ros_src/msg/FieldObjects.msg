@@ -1,4 +1,4 @@
-string          source
-RobotData[]     robots
-ObstacleData[]  obstacles
-GoalData[]      goals
+string         source
+RobotData[]    robots
+ObstacleData[] obstacles
+GoalData[]     goals
