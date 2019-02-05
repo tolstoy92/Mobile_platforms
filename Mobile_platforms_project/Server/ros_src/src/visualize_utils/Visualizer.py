@@ -29,8 +29,8 @@ class Visualizer():
             except CvBridgeError as e:
                 print(e)
 
-    def draw_point(self, point):
-        cv2.circle(self.IMG, (int(point.x), int(point.y)), 1, (255, 0, 100), 3)
+    def draw_point(self, point, color=(255, 0, 100)):
+        cv2.circle(self.IMG, (int(point.x), int(point.y)), 1, color, 3)
 
     def objects_callback(self, data):
         self.fields_objects = data
@@ -44,9 +44,13 @@ class Visualizer():
     def draw_objects(self):
         if self.fields_objects:
             for robot in self.fields_objects.robots:
-                self.draw_point(robot.center)
-                for pt in robot.path:
-                    self.draw_point(pt)
+                if not robot.on_finish:
+                    self.draw_point(robot.center)
+                    for pt in robot.path:
+                        self.draw_point(pt)
+                    self.draw_point(robot.direction, color=(255, 0, 0))
+                    if robot.actual_point:
+                        self.draw_point(robot.actual_point, color=(0, 255, 50))
             for obstacle in self.fields_objects.obstacles:
                 self.draw_point(obstacle.center)
             for goal in self.fields_objects.goals:

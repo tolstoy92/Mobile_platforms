@@ -1,2 +1,2 @@
-int32 id
+int32     id
 Point2d[] corners
