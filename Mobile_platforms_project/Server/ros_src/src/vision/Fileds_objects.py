@@ -195,7 +195,8 @@ class Robot(Marker):
         return projection
 
     def update_angle_to_actual_point(self):
-        self.angle_to_actual_point = self.get_angle_to_point(self.actual_point)
+        if self.actual_point:
+            self.angle_to_actual_point = self.get_angle_to_point(self.actual_point)
 
     def get_angle_to_point(self, destination_point):
         dir_vec = Point((self.direction.x - self.center.x), (self.direction.y - self.center.y))
