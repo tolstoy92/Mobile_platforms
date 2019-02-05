@@ -59,7 +59,7 @@ short x, y, x1, x2;
 short frequency = 500;
 short xCoord;
 short yCoord;
-short correctValue;
+short correctValue = 0;
 short finishValue = -1;
 short errorValue;
 short hallSensorLeft = 0;
@@ -74,13 +74,13 @@ uint8_t topic_id = 5;
 
 char outputData[10] = "Hi";
 
-// const char* ssid = "SPEECH_405";
-// const char* password = "multimodal";
-// const char* mqtt_server = "192.168.0.91";
+const char* ssid = "SPEECH_405";
+const char* password = "multimodal";
+const char* mqtt_server = "192.168.0.105";
 
-const char* ssid = "iGarage";
-const char* password = "igarage18";
-const char* mqtt_server = "10.1.30.46";
+// const char* ssid = "iGarage";
+// const char* password = "igarage18";
+// const char* mqtt_server = "10.1.30.46";
 
 mqttClient mqtt(ssid, password, mqtt_server);
 
@@ -181,8 +181,8 @@ float uPidControl(float uCorrectValue)
 void setup()
 {
     Serial.begin(115200);
-    // mqtt.setupWifi();
-    // mqtt.setCallback(*callback);
+    mqtt.setupWifi();
+    mqtt.setCallback(*callback);
     init_Timer();
     DriveCar.setup(PIN_ENABLE_R,PIN_FORWARD_R,PIN_BACK_R,PIN_FORWARD_L,PIN_BACK_L,PIN_ENABLE_L, channel_R, channel_L);
     DriveCar.setupMotorDriver(channel_R, channel_L, frequency, resolution);
@@ -197,28 +197,18 @@ void driveMotor(short correctValue)
 
 void loop()
 {
-    //  correctValue = 0;
-    // mqtt.initClientLoop();
-    // mqtt.subscribe(topic_id);
-    // if (finishValue == 0)
-    // {
-    //     controlSignal = PIDcontrol(correctValue);
-    //     DriveCar.driveMotor(controlSignal/180);
-    // }
-    // else if (finishValue == 1)
-    //     {
-    //         DriveCar.stop(correctValue);
-    //     }
-    // Serial.println(correctValue);
+    // correctValue = 0;
+    mqtt.initClientLoop();
+    mqtt.subscribe(topic_id);
     
-
-    while (totalInterruptCounter < 50)
-    {   
-
+    if (finishValue == 0)
+    {
         doEncoderRight();
         doEncoderLeft();
 
         if (interruptCounter > 0) {
+
+            //totalInterruptCounter = 0;
 
             portENTER_CRITICAL(&timerMux);
             interruptCounter--;
@@ -230,8 +220,8 @@ void loop()
 
             totalInterruptCounter++;
 
-            Serial.println(rightSpeed/6);
-            Serial.println(leftSpeed/6);
+            // Serial.println(rightSpeed/6);
+            // Serial.println(leftSpeed/6);
 
             errorRightWheel = targetSpeed - rightSpeed/6;
             errorLeftWheel = targetSpeed - leftSpeed/6;
@@ -250,15 +240,47 @@ void loop()
 
             DriveCar.moveForward(uRight, uLeft);
 
-            Serial.println(totalInterruptCounter);
+            //Serial.println(totalInterruptCounter);
 
         }
     }
 
-    DriveCar.moveForward(0, 0);
+    if (finishValue == 1)
 
-    //controlSignal = PIDcontrol(correctValue);
-    //DriveCar.driveMotor(controlSignal/180);
-    //Serial.println(controlSignal);   
-    //delay(800);
+    {
+        // encoderRightCnt = 0;
+        // encoderLeftCnt = 0;
+
+        
+
+        DriveCar.stop(correctValue);
+
+        if (correctValue > 0)
+            {
+                while (encoderRightCnt < 2)
+                    {
+                        doEncoderRight();
+                        doEncoderLeft();
+                        DriveCar.driveMotorOnPlace(correctValue);
+                        Serial.println(encoderRightCnt);
+                    }
+            }
+        
+        else if (correctValue < 0)
+            {
+                while (encoderLeftCnt <=correctValue / 6)
+                    {
+                        //DriveCar.driveMotorOnPlace(correctValue);
+                        Serial.println(encoderLeftCnt);
+                    }
+            }
+
+    }
+
+    //Serial.println(correctValue);
+    
 }
+   
+    //DriveCar.driveMotorOnPlace(40);
+
+    

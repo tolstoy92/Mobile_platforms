@@ -130,3 +130,27 @@ void MotorController::driveMotor(float correctSignal)
 	
 }
 
+void MotorController::driveMotorOnPlace(float correctSignal)
+{
+	if (correctSignal >0)
+	{
+		rotation(MotorLeft, 200, 1);
+		rotation(MotorRight, 200, 1);
+		// delay(100);
+		// rotation(MotorLeft, 220, 0);
+		// rotation(MotorRight, 220, 0);
+		// delay(420);
+	}
+	else if (correctSignal <0)
+	{
+		rotation(MotorLeft, 200, -1);
+		rotation(MotorRight, 200, -1);
+	}
+	else
+	{
+		rotation(MotorLeft, 160, 0);
+		rotation(MotorRight, 160, 0);
+	}
+	
+}
+
