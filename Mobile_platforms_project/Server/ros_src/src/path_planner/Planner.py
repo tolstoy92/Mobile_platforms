@@ -54,9 +54,9 @@ class Paths_planner():
                 tmp_robots = self.robots.copy()
                 if target_id in list(tmp_targets.keys()):
                     img_target_position = tmp_targets[target_id].center
-                    target_position = Point(img_target_position).remap_to_ompl_coord_system().get_xy()
+                    target_position = Point(img_target_position.x, img_target_position.y).remap_to_ompl_coord_system().get_xy()
                     img_robot_position = tmp_robots[robot_id].center
-                    robot_position = Point(img_robot_position).remap_to_ompl_coord_system().get_xy()
+                    robot_position = Point(img_robot_position.x,img_robot_position.y).remap_to_ompl_coord_system().get_xy()
                     full_obstacles = self.get_full_obstacles(robot_id, target_id)
                     paths[robot_id] = self.plan(robot_position, target_position, const.PLANNER_RANGE, full_obstacles)
         return paths
@@ -72,9 +72,9 @@ class Paths_planner():
         full_obstacles = []
         for obstacle in objects_dict.values():
             if self.source == "markers_analizer":
-                corners_list = list(Point(xy).remap_to_ompl_coord_system().get_xy() for xy in obstacle.corners)
+                corners_list = list(Point(xy.x, xy.y).remap_to_ompl_coord_system().get_xy() for xy in obstacle.corners)
             else:
-                corners_list = list(Point(xy).get_xy() for xy in obstacle.corners)
+                corners_list = list(Point(xy.x, xy.y).get_xy() for xy in obstacle.corners)
             path = Path(np.array(corners_list))
             full_obstacles.append(path)
         return full_obstacles
@@ -83,14 +83,12 @@ class Paths_planner():
         tmp_robots = self.robots.copy()
         tmp_robots.pop(actual_robot_id)
         robots_as_obstacles = self.get_obstacles_from_any_objects(tmp_robots)
-        print(robots_as_obstacles)
         return robots_as_obstacles
 
     def targets_as_obstacles(self, actual_target_id):
         tmp_targets = self.targets.copy()
         tmp_targets.pop(actual_target_id)
         targets_as_obstacles = self.get_obstacles_from_any_objects(tmp_targets)
-        print(targets_as_obstacles)
         return targets_as_obstacles
 
     def get_line_cntr(self, pt1, pt2):
@@ -132,7 +130,6 @@ class Paths_planner():
         """
         space = self.space_creation()
         space_info = self.space_info_creation(space, obstacles)
-        print(type(start_pos), type(goal_pos))
         pdef = self.problem_definition(space, space_info, start_pos, goal_pos)
         optimizing_planner = self.allocate_planner(space_info, pdef, planner_range)
         solved = optimizing_planner.solve(const.RUN_TIME)
@@ -252,7 +249,7 @@ class Paths_planner():
         for state in states:
             x = state.getX()
             y = state.getY()
-            cv_point = Point((x, y)).remap_to_img_coord_system()
+            cv_point = Point(x, y).remap_to_img_coord_system()
             path_lst.append(cv_point)
         return path_lst
 

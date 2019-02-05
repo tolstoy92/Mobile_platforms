@@ -23,11 +23,13 @@ def recognize_fields_object_by_id(msg_data):
 def callback(msg_data):
     objects_msg = FieldObjects()
     robots, goals, obstacles = recognize_fields_object_by_id(msg_data)
+    # for robot in robots.values():
+    #     print(robot.actual_point)
+
     objects_msg.source = "markers_analizer"
     objects_msg.robots = list(robot.prepare_msg() for robot in robots.values())
     objects_msg.goals = list(goal.prepare_msg() for goal in goals.values())
     objects_msg.obstacles = list(obstacle.prepare_msg() for obstacle in obstacles.values())
-
     field_objects_pub.publish(objects_msg)
 
 
