@@ -15,9 +15,6 @@
 #define PIN_HALL_R 32
 #define PIN_HALL_L 33
 
-#define iMin -500 
-#define iMax 500 
-
 hw_timer_t *timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
@@ -60,19 +57,18 @@ short frequency = 500;
 short xCoord;
 short yCoord;
 short correctValue = 0;
-short finishValue = -1;
 short errorValue;
 short hallSensorLeft = 0;
 short hallSensorRight = 0;
 
-
+uint8_t topic_id = 5;
+uint8_t finishValue = -1;
 uint8_t resolution = 10;
 uint8_t splitindex;
 uint8_t channel_R = 0;
 uint8_t channel_L = 1;
-uint8_t topic_id = 5;
-
-char outputData[10] = "Hi";
+uint8_t moveForwardValue = -1;
+uint8_t platformNumber = 5;
 
 const char* ssid = "SPEECH_405";
 const char* password = "multimodal";
@@ -85,8 +81,6 @@ const char* mqtt_server = "192.168.0.105";
 mqttClient mqtt(ssid, password, mqtt_server);
 
 MotorController DriveCar;
-
-void driveMotor(short);
 
 void IRAM_ATTR onTimer() 
 {
@@ -127,33 +121,59 @@ void doEncoderLeft()
     }
 }
 
+void anglePid()
+{
+
+}
+
 void callback(char* topic, byte* message, unsigned int length)
 {
-    if (strcmp(topic, "platforms/5")==0) {
+    char angleTopic[64];
+    char finishTopic[64];
+    char moveTopic[64];
 
-    
+    printf(angleTopic, "platforms/%d", platformNumber);
+    sprintf(finishTopic, "on_finish/%d", platformNumber);
+    sprintf(moveTopic, "move_forward/%d", platformNumber);
+
+    if (strcmp(topic, angleTopic)==0) {
+
         receivedData = "";
 
         for (int i = 0; i < length; i++)
         {
             receivedData += (char)message[i];
-
-            correctValue = atoi(receivedData.c_str());
-           
+            correctValue = atoi(receivedData.c_str());    
         }
         Serial.println(correctValue);
     }
-    else if ((strcmp(topic, "on_finish/5")==0)) {
+
+    if ((strcmp(topic, moveTopic)==0)) {
+
         receivedData = "";
 
         for (int i = 0; i < length; i++)
         {
-        receivedData += (char)message[i];
-        finishValue = atoi(receivedData.c_str()); 
+            receivedData += (char)message[i];
+            moveForwardValue = atoi(receivedData.c_str()); 
+        }
+        Serial.println(moveForwardValue);
+         
+    }
+
+    if ((strcmp(topic, finishTopic)==0)) {
+
+        receivedData = "";
+
+        for (int i = 0; i < length; i++)
+        {
+            receivedData += (char)message[i];
+            finishValue = atoi(receivedData.c_str()); 
         }
         Serial.println(finishValue);
          
     }
+    
     
 }
 
@@ -197,90 +217,58 @@ void driveMotor(short correctValue)
 
 void loop()
 {
-    // correctValue = 0;
-    mqtt.initClientLoop();
-    mqtt.subscribe(topic_id);
-    
-    if (finishValue == 0)
-    {
-        doEncoderRight();
-        doEncoderLeft();
+    while (finishValue != 1) {
+        mqtt.initClientLoop();
+        mqtt.subscribe(topic_id);
 
-        if (interruptCounter > 0) {
-
-            //totalInterruptCounter = 0;
-
-            portENTER_CRITICAL(&timerMux);
-            interruptCounter--;
-            rightSpeed = encoderRightCnt;
-            leftSpeed = encoderLeftCnt;
-            encoderRightCnt = 0;
-            encoderLeftCnt = 0;
-            portEXIT_CRITICAL(&timerMux);
-
-            totalInterruptCounter++;
-
-            // Serial.println(rightSpeed/6);
-            // Serial.println(leftSpeed/6);
-
-            errorRightWheel = targetSpeed - rightSpeed/6;
-            errorLeftWheel = targetSpeed - leftSpeed/6;
+        if (moveForwardValue == 1) {
             
-            yRight = yPidControl(errorRightWheel);
-            yLeft = yPidControl(errorLeftWheel);
+            doEncoderRight();
+            doEncoderLeft();
 
-            uRight = uPidControl(yRight);
-            uLeft = uPidControl(yLeft);
+            if (interruptCounter > 0) {
 
-            //Serial.println(yRight);
-            //Serial.println(yLeft);
+                portENTER_CRITICAL(&timerMux);
+                interruptCounter--;
+                rightSpeed = encoderRightCnt;
+                leftSpeed = encoderLeftCnt;
+                encoderRightCnt = 0;
+                encoderLeftCnt = 0;
+                portEXIT_CRITICAL(&timerMux);
 
-            //Serial.println(uRight);
-            //Serial.println(uLeft);
+                totalInterruptCounter++;
 
-            DriveCar.moveForward(uRight, uLeft);
+                Serial.println(rightSpeed/6);
+                Serial.println(leftSpeed/6);
 
-            //Serial.println(totalInterruptCounter);
+                errorRightWheel = targetSpeed - rightSpeed/6;
+                errorLeftWheel = targetSpeed - leftSpeed/6;
 
+                yRight = yPidControl(errorRightWheel);
+                yLeft = yPidControl(errorLeftWheel);
+
+                uRight = uPidControl(yRight);
+                uLeft = uPidControl(yLeft);
+
+                //Serial.println(yRight);
+                //Serial.println(yLeft);
+
+                //Serial.println(uRight);
+                //Serial.println(uLeft);
+
+                DriveCar.moveForward(uRight, uLeft);
+            }
         }
+
+        else if (moveForwardValue == 0) {
+
+            DriveCar.stop(correctValue);
+            DriveCar.driveMotorOnPlace(correctValue);
+
+        } 
     }
-
-    if (finishValue == 1)
-
-    {
-        // encoderRightCnt = 0;
-        // encoderLeftCnt = 0;
-
-        
-
-        DriveCar.stop(correctValue);
-
-        if (correctValue > 0)
-            {
-                while (encoderRightCnt < 2)
-                    {
-                        doEncoderRight();
-                        doEncoderLeft();
-                        DriveCar.driveMotorOnPlace(correctValue);
-                        Serial.println(encoderRightCnt);
-                    }
-            }
-        
-        else if (correctValue < 0)
-            {
-                while (encoderLeftCnt <=correctValue / 6)
-                    {
-                        //DriveCar.driveMotorOnPlace(correctValue);
-                        Serial.println(encoderLeftCnt);
-                    }
-            }
-
-    }
-
-    //Serial.println(correctValue);
-    
-}
+}   
    
-    //DriveCar.driveMotorOnPlace(40);
+
 
     

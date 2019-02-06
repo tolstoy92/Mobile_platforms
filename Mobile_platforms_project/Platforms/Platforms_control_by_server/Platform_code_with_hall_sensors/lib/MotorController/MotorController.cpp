@@ -89,7 +89,6 @@ void MotorController::rotateRight(short correctValue)
 	rotation(MotorRight, 120, -1);
 	rotation(MotorLeft, 120, -1);
 	delay(80);
-	// delay(-correctValue*12);
 	rotation(MotorLeft, 150, 0);
  	rotation(MotorRight,150, 0);
 
@@ -113,19 +112,16 @@ void MotorController::driveMotor(float correctSignal)
 	{
 		rotation(MotorLeft, 160, 1);
 		rotation(MotorRight, 160*(1-correctSignal), -1);
-		Serial.println(150*(1-correctSignal));
 	}
 	else if (correctSignal <0)
 	{
 		rotation(MotorLeft, 160*(1+correctSignal), 1);
 		rotation(MotorRight, 160, -1);
-		Serial.println(150*(1+correctSignal));	
 	}
 	else
 	{
 		rotation(MotorLeft, 160, 1);
 		rotation(MotorRight, 160, -1);
-		Serial.println(150);
 	}
 	
 }
