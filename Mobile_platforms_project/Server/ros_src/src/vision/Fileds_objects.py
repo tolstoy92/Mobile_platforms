@@ -2,7 +2,7 @@ from numpy import array
 from math import degrees, sqrt, acos
 from matplotlib.path import Path
 from copy import deepcopy
-from vision.vision_constants import IMAGE_SIZE, HIGH_BOUNDS, LOW_BOUNDS, EPS
+from vision.vision_constants import IMAGE_SIZE, HIGH_BOUNDS, LOW_BOUNDS, EPS, MAP_COLUMNS, MAP_ROWS
 from platforms_server.msg import RobotData, GoalData, ObstacleData, Point2d
 
 
@@ -101,11 +101,15 @@ class Robot(Marker):
         self.corners = list(Point(xy.x, xy.y) for xy in corners)
         self.center = self.get_center()
         self.direction = self.get_direction()
+        self.sector = None
         self.path_created = False
         self.path = []
         self.on_finish = False
         self.actual_point = None
         self.angle_to_actual_point = None
+        self.map = ImageMap()
+        self.map.set_map_params(IMAGE_SIZE, IMAGE_SIZE, MAP_ROWS, MAP_COLUMNS)
+        self.map.create_sectors()
 
     def __repr__(self):
         return "Robot:\n\tid: {}\n\tposition: {}\n\tdirection: {}".format(self.id,
@@ -125,6 +129,8 @@ class Robot(Marker):
             msg.actual_point = self.actual_point
         if self.angle_to_actual_point:
             msg.angle_to_actual_point = self.angle_to_actual_point
+        if self.sector:
+            msg.sector = self.sector
         msg.on_finish = self.on_finish
         return msg
 
@@ -132,6 +138,7 @@ class Robot(Marker):
         self.update_corners(corners)
         self.update_position()
         self.update_direction()
+        self.update_sector()
         if self.path_created:
             self.update_actual_point()
             self.update_angle_to_actual_point()
@@ -149,6 +156,10 @@ class Robot(Marker):
     def update_direction(self):
         self.direction = self.get_direction()
 
+    def update_sector(self):
+        r, c = self.map.get_point_position_on_map(self.center)
+        self.sector = (r, c)
+
     def on_point(self):
         if self.get_distance_between_pts(self.center, self.actual_point) <= EPS:
             self.actual_point = None
@@ -162,6 +173,10 @@ class Robot(Marker):
             if len(self.path):
                 if not self.actual_point:
                     self.actual_point = self.path.pop(0)
+
+    def update_angle_to_actual_point(self):
+        if self.actual_point:
+            self.angle_to_actual_point = self.get_angle_to_point(self.actual_point)
 
     def set_path(self, path_msg):
         if not self.path_created:
@@ -193,10 +208,6 @@ class Robot(Marker):
         else:
             projection.y = (projection.x - self.center.x) * (destination_point.y - self.center.y) / 1 + self.center.y
         return projection
-
-    def update_angle_to_actual_point(self):
-        if self.actual_point:
-            self.angle_to_actual_point = self.get_angle_to_point(self.actual_point)
 
     def get_angle_to_point(self, destination_point):
         dir_vec = Point((self.direction.x - self.center.x), (self.direction.y - self.center.y))
@@ -314,3 +325,67 @@ class Obstacle:
         ompl_points = self.remap_points_to_ompl_coord_system()
         points = self.points_to_list(ompl_points)
         return Path(array(points))
+
+
+class ImageMap():
+    def __init__(self, rows=None, columns=None, sector_w=None, sector_h=None):
+        self.rows_num = rows
+        self.columns_num = columns
+        self.sector_w = sector_w
+        self.sector_h = sector_h
+        self.row = None
+        self.column = None
+
+    def __repr__(self):
+        return "MAP:\n\trows: {}\n\tcolumns: {}".format(self.rows_num, self.columns_num)
+
+    def find_sector_size(self, image_w, image_h, rows, columns):
+        sector_w = image_w // columns
+        sector_h = image_h // rows
+        return sector_w, sector_h
+
+    def set_map_params(self, image_w, image_h, rows, columns):
+        self.sector_w, self.sector_h = self.find_sector_size(image_w, image_h, rows, columns)
+        self.set_sectors_num(rows, columns)
+
+    def set_sectors_num(self, rows, columns):
+        self.rows_num = rows
+        self.columns_num = columns
+
+    def get_img_sector(img, start_x, start_y, sector_w, sector_h):
+        # img[y:y+h, x:x+w]
+        sector = img[start_y:start_y + sector_h, start_x:start_x + sector_w]
+        return sector
+
+    def create_sectors(self):
+        row = {}
+        column = {}
+        for c in range(self.columns_num):
+            column[c] = [c * self.sector_w, (c + 1) * self.sector_w]
+        for r in range(self.rows_num):
+            row[r] = [r * self.sector_h, (r + 1) * self.sector_h]
+        self.row, self.column = row, column
+
+    def get_sector_coords(self, r, c):
+        return self.row[r], self.column[c]
+
+    def get_row_for_point(self, y):
+        for key in self.column.keys():
+            if y >= self.column[key][0] and y < self.column[key][1]:
+                return key
+
+    def get_column_for_point(self, x):
+        for key in self.row.keys():
+            if x >= self.row[key][0] and x < self.row[key][1]:
+                return key
+
+    def get_point_position_on_map(self, point):
+        if isinstance(point, Point):
+            return self.get_row_for_point(point.y), self.get_column_for_point(point.x)
+        else:
+            return self.get_row_for_point(point[1]), self.get_column_for_point(point[0])
+
+    def get_sector_center(self, r, c):
+        x = (self.column[c][0] + self.column[c][1]) // 2
+        y = (self.row[r][0] + self.row[r][1]) // 2
+        return Point(x, y)
