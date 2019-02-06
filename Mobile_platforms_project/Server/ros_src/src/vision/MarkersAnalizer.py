@@ -18,7 +18,6 @@ class MarkersAnalizer:
     def recognize_fields_object_by_id(self, msg_data):
         ids = []
         corners = []
-        robots_dict = {}
         for object in msg_data.markers:
             ids.append(object.id)
             corners.append(object.corners)

@@ -2,11 +2,10 @@
 
 
 import rospy
-import cv2, cv2.aruco as aruco
+import cv2
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from vision.vision_constants import IMAGE_SIZE, CAMERA_INDEX, CV_WAITKEY
-
 
 def resize_image_to_square_size(image):
     w, h, _ = image.shape
@@ -18,16 +17,15 @@ def resize_image_to_square_size(image):
         return image
 
 
-aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_250)
-parameters = aruco.DetectorParameters_create()
-
 rospy.init_node('camera_node', anonymous=True)
+
 
 cv_bridge = CvBridge()
 image_publisher = rospy.Publisher("square_image", Image, queue_size=5)
 
 RUN = True
 stream = cv2.VideoCapture(CAMERA_INDEX)
+
 while RUN and not rospy.is_shutdown():
     ret, img = stream.read()
     if ret:
