@@ -67,3 +67,11 @@ class MqttClientTools():
         if delay > self.delay_time:
             self.send_msg(client, topic, msg)  # args = client, topic, msg, qos
             self.update_last_sendig_time()
+
+    def send_multiple_msg_with_delay(self, client, topics_lst, msgs_lst):
+        delay = time.time() - self.last_sending_time
+        if delay > self.delay_time:
+            l = list(zip(topics_lst, msgs_lst))
+            for topic, msg in l:
+                self.send_msg(client, topic, msg)
+            self.update_last_sendig_time()

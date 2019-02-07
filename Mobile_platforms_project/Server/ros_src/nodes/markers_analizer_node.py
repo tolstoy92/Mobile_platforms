@@ -23,8 +23,8 @@ def recognize_fields_object_by_id(msg_data):
 def callback(msg_data):
     objects_msg = FieldObjects()
     robots, goals, obstacles = recognize_fields_object_by_id(msg_data)
-    # for robot in robots.values():
-    #     print(robot.actual_point)
+    for robot in robots.values():
+        print(robot)
 
     objects_msg.source = "markers_analizer"
     objects_msg.robots = list(robot.prepare_msg() for robot in robots.values())
