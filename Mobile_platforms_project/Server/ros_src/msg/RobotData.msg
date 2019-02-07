@@ -5,8 +5,14 @@ Point2d[] corners
 Point2d[] path
 bool      path_created
 Point2d   actual_point
+Point2d   next_point
 int32     angle_to_actual_point
-bool      on_finish
+int32     actual_angle
 int32[]   sector
+
+bool      on_finish
+bool      move
+bool      rotation
+bool      stop
 
 

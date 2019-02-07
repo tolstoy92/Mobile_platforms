@@ -83,6 +83,8 @@ class Visualizer():
                              (int(robot.direction.x), int(robot.direction.y)), color=(100, 100, 255), thickness=3)
                     if robot.actual_point:
                         self.draw_crest(robot.actual_point, color=(100, 255, 50))
+                    if robot.next_point:
+                        self.draw_crest(robot.next_point, color=(255, 50, 50))
                     if robot.sector:
                         if self.do_draw_map:
                             center = self.map.get_sector_center(*robot.sector)

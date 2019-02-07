@@ -4,6 +4,7 @@ from matplotlib.path import Path
 from copy import deepcopy
 from vision.vision_constants import IMAGE_SIZE, HIGH_BOUNDS, LOW_BOUNDS, EPS, MAP_COLUMNS, MAP_ROWS
 from platforms_server.msg import RobotData, GoalData, ObstacleData, Point2d
+import time
 
 
 class Point:
@@ -104,17 +105,32 @@ class Robot(Marker):
         self.sector = None
         self.path_created = False
         self.path = []
-        self.on_finish = False
         self.actual_point = None
         self.angle_to_actual_point = None
+        self.next_point = None
+        self.angle_to_next_point = None
+        self.actual_angle = None
         self.map = ImageMap()
         self.map.set_map_params(IMAGE_SIZE, IMAGE_SIZE, MAP_ROWS, MAP_COLUMNS)
         self.map.create_sectors()
 
+        self.on_finish = False
+        self.move_forward = False
+        self.self_rotation = False
+
     def __repr__(self):
-        return "Robot:\n\tid: {}\n\tposition: {}\n\tdirection: {}".format(self.id,
-                                                                          self.center,
-                                                                          self.direction)
+        return "Robot:\n\tid: {}\n\tposition: {}\n\t" \
+               "direction: {}\n\tmove forward: {}\n\trotation: {}\n\t" \
+               "angle to actual point: {}\n\tangle to next point: {}\n\ton point: {}\n\t" \
+                "on finish: {}".format(self.id,
+                                       self.center,
+                                       self.direction,
+                                       self.move_forward,
+                                       self.self_rotation,
+                                       self.angle_to_actual_point,
+                                       self.angle_to_next_point,
+                                       self.on_point(),
+                                       self.on_finish)
 
     def prepare_msg(self):
         msg = RobotData()
@@ -131,6 +147,12 @@ class Robot(Marker):
             msg.angle_to_actual_point = self.angle_to_actual_point
         if self.sector:
             msg.sector = self.sector
+        if self.next_point:
+            msg.next_point = self.next_point
+        if self.actual_angle:
+            msg.actual_angle = self.actual_angle
+        msg.rotation = self.self_rotation
+        msg.move = self.move_forward
         msg.on_finish = self.on_finish
         return msg
 
@@ -139,13 +161,55 @@ class Robot(Marker):
         self.update_position()
         self.update_direction()
         self.update_sector()
-        if self.path_created:
-            self.update_actual_point()
+        if self.path_created and not self.on_finish:
+            if not self.actual_point:
+                self.update_actual_point()
             self.update_angle_to_actual_point()
-            if self.actual_point:
-                self.on_point()
+            if self.on_point():
+                if not isinstance(self.angle_to_next_point, type(None)):
+                    self.actual_angle = self.angle_to_next_point
+                    if abs(self.angle_to_next_point) < 5:
+                        self.update_actual_point()
+                        self.move()
+                    else:
+                        self.rotation()
             else:
-                self.on_finish = True
+                if not isinstance(self.angle_to_actual_point, type(None)):
+                    self.actual_angle = self.angle_to_actual_point
+                    if abs(self.angle_to_actual_point) < 20:
+                        self.move()
+                    else:
+                        self.rotation()
+
+
+
+
+
+            # if not self.on_finish:
+            #     if not self.on_point():
+            #         if self.angle_to_actual_point > 5:
+            #             self.rotation()
+            #         else:
+            #             self.move()
+            #     else:
+            #         if self.angle_to_next_point > 5:
+            #             self.rotation()
+            #         else:
+            #             self.actual_point = None
+            #             self.update_actual_point()
+            #             self.update_angle_to_actual_point()
+
+
+
+            # if self.angle_to_actual_point > 3:
+            #     self.rotation()
+            # else:
+            #     self.move()
+            # if self.actual_point:
+            #     if self.on_point():
+            #         self.stop()
+            # else:
+            #     self.on_finish = True
 
     def update_position(self):
         self.center = self.get_center()
@@ -161,22 +225,44 @@ class Robot(Marker):
         self.sector = (r, c)
 
     def on_point(self):
-        if self.get_distance_between_pts(self.center, self.actual_point) <= EPS:
-            self.actual_point = None
-            self.angle_to_actual_point = None
-            return True
+        if self.actual_point:
+            if Robot.get_distance_between_pts(self.center, self.actual_point) <= EPS:
+                return True
+            else:
+                return False
         else:
             return False
 
     def update_actual_point(self):
         if self.path_created:
             if len(self.path):
-                if not self.actual_point:
-                    self.actual_point = self.path.pop(0)
+                self.actual_point = self.path.pop(0)
+                if len(self.path):
+                    self.next_point = self.path[0]
+                else:
+                    self.next_point = None
+            else:
+                self.on_finish = True
 
     def update_angle_to_actual_point(self):
         if self.actual_point:
             self.angle_to_actual_point = self.get_angle_to_point(self.actual_point)
+        if self.next_point:
+            self.angle_to_next_point = self.get_angle_to_point(self.next_point)
+        else:
+            self.angle_to_next_point = None
+
+    def rotation(self):
+        self.move_forward = False
+        self.self_rotation = True
+
+    def move(self):
+        self.move_forward = True
+        self.self_rotation = False
+
+    def stop(self):
+        self.move_forward = False
+        self.self_rotation = False
 
     def set_path(self, path_msg):
         if not self.path_created:
@@ -192,7 +278,8 @@ class Robot(Marker):
         direction_point = Point(*self.get_line_cntr(front_left_corner, front_right_corner))
         return direction_point
 
-    def get_distance_between_pts(self, pt1, pt2):
+    @staticmethod
+    def get_distance_between_pts(pt1, pt2):
         return sqrt((pt2.x - pt1.x) ** 2 + (pt2.y - pt1.y) ** 2)
 
     def get_position(self):
@@ -209,9 +296,9 @@ class Robot(Marker):
             projection.y = (projection.x - self.center.x) * (destination_point.y - self.center.y) / 1 + self.center.y
         return projection
 
-    def get_angle_to_point(self, destination_point):
+    def get_angle_to_point(self, point):
         dir_vec = Point((self.direction.x - self.center.x), (self.direction.y - self.center.y))
-        trajectory_vec = Point((destination_point.x - self.center.x), (destination_point.y - self.center.y))
+        trajectory_vec = Point((point.x - self.center.x), (point.y - self.center.y))
         scalar_multiply = dir_vec.x * trajectory_vec.x + dir_vec.y * trajectory_vec.y
         dir_vec_module = sqrt(dir_vec.x ** 2 + dir_vec.y ** 2)
         trajectory_vec_module = sqrt(trajectory_vec.x ** 2 + trajectory_vec.y ** 2)
@@ -220,7 +307,7 @@ class Robot(Marker):
             angle = round(degrees(acos(min(1, max(cos_a, -1)))))
         else:
             angle = 0
-        angle = self.get_angle_sign(destination_point, angle)
+        angle = self.get_angle_sign(point, angle)
         return angle
 
     def get_angle_sign(self, destination_point, angle):
