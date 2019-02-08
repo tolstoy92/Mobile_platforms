@@ -37,11 +37,13 @@ void mqttClient::subscribe(int platform_id)
     char finish_topic[64];
     char client_name[64];
     char move_topic[64];
+    char rotate_topic[64];
     sprintf(theme, "Platform %d is connected!", platform_id);
     sprintf(angle_topic, "platforms/%d", platform_id);
     sprintf(client_name, "platform_%d", platform_id);
-    sprintf(finish_topic, "on_finish/%d", platform_id);
-    sprintf(move_topic, "move_forward/%d", platform_id);
+    sprintf(finish_topic, "platforms/%d/on_finish", platform_id);
+    sprintf(move_topic, "platforms/%d/move", platform_id);
+    sprintf(rotate_topic, "platforms/%d/rotate", platform_id);
     //Loop until we're reconnected
     while (!client->connected())
     {
@@ -49,9 +51,10 @@ void mqttClient::subscribe(int platform_id)
         if (client->connect(client_name))
         {
             
-            client->subscribe(finish_topic);
-            client->subscribe(angle_topic);
-            client->subscribe(move_topic);
+            client->subscribe(finish_topic, 0);
+            client->subscribe(angle_topic, 0);
+            client->subscribe(move_topic, 0);
+            client->subscribe(rotate_topic, 0);
             // Subscribe to topic
             client->publish("connected", theme);
         }
