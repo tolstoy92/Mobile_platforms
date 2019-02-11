@@ -23,8 +23,6 @@ def recognize_fields_object_by_id(msg_data):
 def callback(msg_data):
     objects_msg = FieldObjects()
     robots, goals, obstacles = recognize_fields_object_by_id(msg_data)
-    for robot in robots.values():
-        print(robot)
 
     objects_msg.source = "markers_analizer"
     objects_msg.robots = list(robot.prepare_msg() for robot in robots.values())
@@ -36,6 +34,6 @@ def callback(msg_data):
 analizer = MarkersAnalizer()
 rospy.init_node("markers_analizer_node")
 markers_data_sub = rospy.Subscriber("detected_markers", ArucoData, callback)
-field_objects_pub = rospy.Publisher("field_objects", FieldObjects, queue_size=5)
+field_objects_pub = rospy.Publisher("field_objects", FieldObjects, queue_size=1)
 
 rospy.spin()

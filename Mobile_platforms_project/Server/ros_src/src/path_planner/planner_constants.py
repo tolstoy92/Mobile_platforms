@@ -26,6 +26,6 @@ iMin = -0.2
 iMax = 0.2
 
 
-platform_target = {2: 246}
+platform_target = {2: 246, 3:247, 4:248}
 
 vrep_platforms_target = {}

@@ -21,10 +21,11 @@ rospy.init_node('camera_node', anonymous=True)
 
 
 cv_bridge = CvBridge()
-image_publisher = rospy.Publisher("square_image", Image, queue_size=5)
+image_publisher = rospy.Publisher("square_image", Image, queue_size=1)
 
 RUN = True
 stream = cv2.VideoCapture(CAMERA_INDEX)
+stream.set(cv2.CAP_PROP_FPS, 30)
 
 while RUN and not rospy.is_shutdown():
     ret, img = stream.read()

@@ -2,7 +2,7 @@ from numpy import array
 from math import degrees, sqrt, acos
 from matplotlib.path import Path
 from copy import deepcopy
-from vision.vision_constants import IMAGE_SIZE, HIGH_BOUNDS, LOW_BOUNDS, EPS, MAP_COLUMNS, MAP_ROWS
+from vision.vision_constants import IMAGE_SIZE, HIGH_BOUNDS, LOW_BOUNDS, EPS, MAP_COLUMNS, MAP_ROWS, ANGLE_EPS
 from platforms_server.msg import RobotData, GoalData, ObstacleData, Point2d
 import time
 
@@ -168,48 +168,20 @@ class Robot(Marker):
             if self.on_point():
                 if not isinstance(self.angle_to_next_point, type(None)):
                     self.actual_angle = self.angle_to_next_point
-                    if abs(self.angle_to_next_point) < 5:
+                    if abs(self.angle_to_next_point) < ANGLE_EPS:
                         self.update_actual_point()
                         self.move()
                     else:
                         self.rotation()
+                else:
+                    self.on_finish = True
             else:
                 if not isinstance(self.angle_to_actual_point, type(None)):
                     self.actual_angle = self.angle_to_actual_point
-                    if abs(self.angle_to_actual_point) < 20:
+                    if abs(self.angle_to_actual_point) < ANGLE_EPS:
                         self.move()
                     else:
                         self.rotation()
-
-
-
-
-
-            # if not self.on_finish:
-            #     if not self.on_point():
-            #         if self.angle_to_actual_point > 5:
-            #             self.rotation()
-            #         else:
-            #             self.move()
-            #     else:
-            #         if self.angle_to_next_point > 5:
-            #             self.rotation()
-            #         else:
-            #             self.actual_point = None
-            #             self.update_actual_point()
-            #             self.update_angle_to_actual_point()
-
-
-
-            # if self.angle_to_actual_point > 3:
-            #     self.rotation()
-            # else:
-            #     self.move()
-            # if self.actual_point:
-            #     if self.on_point():
-            #         self.stop()
-            # else:
-            #     self.on_finish = True
 
     def update_position(self):
         self.center = self.get_center()
@@ -317,14 +289,14 @@ class Robot(Marker):
         projection = self.get_projection_of_direction_pt_on_trajectory(destination_point)
         if self.center.x <= destination_point.x:
             if self.direction.y >= projection.y:
-                result_angle = -angle
-            else:
                 result_angle = angle
+            else:
+                result_angle = -angle
         else:
             if self.direction.y >= projection.y:
-                result_angle = angle
-            else:
                 result_angle = -angle
+            else:
+                result_angle = angle
         return result_angle
 
 
