@@ -1,4 +1,3 @@
-import rospy
 from vision.Fileds_objects import Robot, Goal, Obstacle, Marker
 from vision.vision_constants import EPS
 from math import sqrt
@@ -10,10 +9,6 @@ class MarkersAnalizer:
         self.robots = {}
         self.goals = {}
         self.obstacles = {}
-        rospy.init_node("markers_analizer_node")
-        self.markers_data_sub = rospy.Subscriber("detected_markers", ArucoData, self.field_objects_callback)
-        self.paths_data_sub = rospy.Subscriber("paths_data", AllPathes, self.paths_callback)
-        self.field_objects_pub = rospy.Publisher("field_objects", FieldObjects_msg, queue_size=1)
 
     def recognize_fields_object_by_id(self, msg_data):
         ids = []

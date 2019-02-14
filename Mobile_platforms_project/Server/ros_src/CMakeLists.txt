@@ -22,6 +22,7 @@ add_message_files (
   FieldObjects.msg
   Path.msg
   AllPathes.msg
+  RobotMovement.msg
 )
 
 

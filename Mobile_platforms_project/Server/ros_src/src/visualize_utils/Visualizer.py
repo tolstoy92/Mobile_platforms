@@ -81,8 +81,13 @@ class Visualizer():
                     self.draw_point(robot.direction, color=(50, 50, 250), size=5)
                     cv2.line(self.IMG, (int(robot.center.x), int(robot.center.y)),
                              (int(robot.direction.x), int(robot.direction.y)), color=(100, 100, 255), thickness=3)
+                    cv2.putText(self.IMG, str(robot.id), (int(robot.center.x) + 5, int(robot.center.y)),
+                                cv2.FONT_HERSHEY_PLAIN, 2,
+                                (255, 100, 60), 3)
                     if robot.actual_point:
                         self.draw_crest(robot.actual_point, color=(100, 255, 50))
+                        cv2.putText(self.IMG, str(robot.id), (int(robot.actual_point.x) + 5, int(robot.actual_point.y)), cv2.FONT_HERSHEY_PLAIN, 2,
+                                    (255, 100, 60), 3)
                     if robot.next_point:
                         self.draw_crest(robot.next_point, color=(255, 50, 50))
                     if robot.sector:
@@ -105,9 +110,11 @@ class Visualizer():
 
     def draw_paths(self):
         if self.pathes:
+            print(self.pathes)
             for path in self.pathes.paths_list:
                 for pt in path.path_points:
                     self.draw_point(pt, size=5)
+
 
     def start_spin(self):
         rospy.spin()

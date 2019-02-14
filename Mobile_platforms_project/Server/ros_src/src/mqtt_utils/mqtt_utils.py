@@ -58,15 +58,17 @@ class MqttClientTools():
     def send_msg(self, client, topic, msg):
         msg = str(msg)
         client.publish(topic, msg, qos=self.qos)
-        self.update_last_sendig_time()
+
 
     def update_last_sendig_time(self):
         self.last_sending_time = time.time()
 
-    def send_msg_with_delay(self, client, topic, msg):
-        delay = time.time() - self.last_sending_time
+    def send_msg_with_delay(self, delays_dict, robot_id, client, topic, msg):
+        delay = time.time() - delays_dict[robot_id]
         if delay > self.delay_time:
             self.send_msg(client, topic, msg)  # args = client, topic, msg, qos
+            delays_dict[robot_id] = time.time()
+        return delays_dict
 
     def send_multiple_msg_with_delay(self, client, topics_lst, msgs_lst):
         delay = time.time() - self.last_sending_time
@@ -75,3 +77,38 @@ class MqttClientTools():
             for topic, msg in l:
                 self.send_msg(client, topic, msg)
             self.update_last_sendig_time()
+
+    def prepare_angle_msg(self, angle):
+        if angle < 0:
+            sign = "0"
+        else:
+            sign = "1"
+        angle_msg = str(abs(angle))
+        if len(angle_msg) == 3:
+            msg = sign + angle_msg
+        elif len(angle_msg) == 2:
+            msg = sign + "0" + angle_msg
+        elif len(angle_msg) == 1:
+            msg = sign + "00" + angle_msg
+        return msg
+
+    def prepare_move_msg(self, move):
+        if move == 0:
+            msg = "0"
+        else:
+            msg = "1"
+        return msg
+
+    def prepare_rotation(self, rot):
+        if rot == 0:
+            msg = "0"
+        else:
+            msg = "1"
+        return msg
+
+    def prepare_finish_msg(self, finish):
+        if finish == 0:
+            msg = "0"
+        else:
+            msg = "1"
+        return msg

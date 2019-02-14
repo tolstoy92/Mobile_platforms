@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from platforms_server.msg import ArucoData, FieldObjects
+from platforms_server.msg import ArucoData, FieldObjects, AllPathes
 from vision.MarkersAnalizer import MarkersAnalizer
 
 
@@ -34,6 +34,7 @@ def callback(msg_data):
 analizer = MarkersAnalizer()
 rospy.init_node("markers_analizer_node")
 markers_data_sub = rospy.Subscriber("detected_markers", ArucoData, callback)
+paths_data_sub = rospy.Subscriber("paths_data", AllPathes, analizer.paths_callback)
 field_objects_pub = rospy.Publisher("field_objects", FieldObjects, queue_size=1)
 
 rospy.spin()

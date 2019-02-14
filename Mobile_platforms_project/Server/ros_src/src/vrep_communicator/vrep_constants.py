@@ -6,3 +6,10 @@ ROBOTS_NAMES_TREE = 'startConfigurations'
 TARGETS_NAMES_TREE = 'goalConfigurations'
 OBSTACLES_NAMES_TREE = 'OuterWalls'
 WITH_DYNAMIC_OBSTACLES = False
+
+ROTATION_SPEED = 0.1
+kp = 0.1
+ki = 0.0001
+kd = 0.0009
+iMin = -0.2
+iMax = 0.2
