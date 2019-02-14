@@ -17,7 +17,7 @@ class Point:
     def __repr__(self):
         return str(self.x) + " " + str(self.y)
 
-    def __call__(self, type_of):
+    def __call__(self, type_of=int):
         return type_of(self.x), type_of(self.y)
 
     def set_x(self, x):

@@ -93,7 +93,8 @@ class Visualizer():
                     if robot.sector:
                         if self.do_draw_map:
                             center = self.map.get_sector_center(*robot.sector)
-                            cv2.circle(self.IMG, center.get_xy(), self.map.sector_h//2, (0, 0, 255), 2)
+                            self.draw_rectangle(center, self.map.sector_w)
+                            # cv2.circle(self.IMG, center(), self.map.sector_h//2, (0, 0, 255), 2)
             for obstacle in self.fields_objects.obstacles:
                 self.draw_point(obstacle.center)
             for goal in self.fields_objects.goals:
@@ -114,6 +115,15 @@ class Visualizer():
             for path in self.pathes.paths_list:
                 for pt in path.path_points:
                     self.draw_point(pt, size=5)
+
+    def draw_rectangle(self, center, width):
+        points = []
+        points.append((int(center.x - width // 2), int(center.y - width // 2)))
+        points.append((int(center.x + width // 2), int(center.y - width // 2)))
+        points.append((int(center.x + width // 2), int(center.y + width // 2)))
+        points.append((int(center.x - width // 2), int(center.y + width // 2)))
+        for i in range(len(points)):
+            cv2.line(self.IMG, points[i], points[i - 1], (255, 200, 40), 2)
 
 
     def start_spin(self):

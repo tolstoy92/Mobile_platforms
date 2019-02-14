@@ -13,17 +13,13 @@ from platforms_server.msg import AllPathes, Path, FieldObjects as FieldObjects_m
 from vision.Fileds_objects import ImageMap
 from vision.vision_constants import IMAGE_SIZE, MAP_COLUMNS, MAP_ROWS
 
-
 MARKER_IDS = [2, 3, 4]
 
 path_points_num = 2
 
-
 map = ImageMap()
 map.set_map_params(IMAGE_SIZE, IMAGE_SIZE, MAP_ROWS, MAP_COLUMNS)
 map.create_sectors()
-
-
 
 image = None
 X, Y = None, None
@@ -40,14 +36,12 @@ def cv_callback(event,x,y,flags,param):
     global X, Y
     global sector_x, sector_y
 
-    if event == cv2.EVENT_LBUTTONDBLCLK:
+    if event == cv2.EVENT_LBUTTONUP:
         X, Y = x, y
-    if event == cv2.EVENT_MOUSEMOVE:
+    elif event == cv2.EVENT_MOUSEMOVE:
         r, c = map.get_point_position_on_map(Point(x, y))
         point = map.get_sector_center(r, c)
         sector_x, sector_y = point.x, point.y
-
-
 
 
 def draw_rectangle(center, width):
@@ -85,7 +79,8 @@ def obj_callback(msg_data):
                 OK = False
                 path = []
                 while not OK:
-                    cv2.circle(image, (int(robot.center.x), int(robot.center.y)), 5, (255, 100, 50), 4)
+                    cv2.putText(image, "Select sector. (You need {} points)".format(path_points_num), (20, 20), cv2.FONT_HERSHEY_PLAIN, 2, (255, 50, 40), 2)
+                    cv2.circle(image, (int(robot.center.x), int(robot.center.y)), 5, (255, 255, 10), 4)
                     if sector_x and sector_y:
                         draw_rectangle((sector_x, sector_y), map.sector_w)
                     if len(path):
