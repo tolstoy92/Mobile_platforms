@@ -79,10 +79,11 @@ def obj_callback(msg_data):
                 OK = False
                 path = []
                 while not OK:
-                    cv2.putText(image, "Select sector. (You need {} points)".format(path_points_num), (20, 20), cv2.FONT_HERSHEY_PLAIN, 2, (255, 50, 40), 2)
+                    cv2.putText(image, "Select sector. (You need {} points)".format(path_points_num), \
+                                (20, 20), cv2.FONT_HERSHEY_PLAIN, 2, (255, 50, 40), 2)
                     cv2.circle(image, (int(robot.center.x), int(robot.center.y)), 5, (255, 255, 10), 4)
-                    if sector_x and sector_y:
-                        draw_rectangle((sector_x, sector_y), map.sector_w)
+                    # if sector_x and sector_y:                                     # !!! uncomment for use sectors
+                        # draw_rectangle((sector_x, sector_y), map.sector_w)        # !!! uncomment for use sectors
                     if len(path):
                         for pt in path:
                             cv2.circle(image, (int(pt.x), int(pt.y)), 5, (255, 100, 50), 4)
@@ -92,7 +93,8 @@ def obj_callback(msg_data):
                         path_point = map.get_point_position_on_map(Point(X, Y))
                         cv_path_point = map.get_sector_center(*path_point)
                         if len(path) < path_points_num:
-                            path.append(cv_path_point)
+                            path.append(Point(X, Y))                                # !!! comment for use sectors
+                            # path.append(cv_path_point)                            # !!! uncomment for use sectors
                             X, Y = None, None
                         else:
                             OK = not OK

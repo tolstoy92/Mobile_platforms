@@ -28,13 +28,12 @@ def mqtt_callback(msg_data):
             finish_msg = msg_sender.prepare_finish_msg(robot.on_finish)
 
             final_msg = angle_msg + move_msg + rotate_msg + finish_msg
-
+            print(final_msg)
             if not robot.id in delays.keys():
                 delays[robot.id] = 0
 
-            msg_sender.delay_time = 0.3
+            msg_sender.delay_time = 0.2
             delays = msg_sender.send_msg_with_delay(delays, robot.id, client, platform_topic, final_msg)
-
 
 rospy.init_node("mqtt_node")
 fields_data_sub = rospy.Subscriber("field_objects", FieldObjects, mqtt_callback)

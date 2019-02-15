@@ -23,6 +23,8 @@ add_message_files (
   Path.msg
   AllPathes.msg
   RobotMovement.msg
+  XML_PATH.msg
+  Step.msg
 )
 
 
