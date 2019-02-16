@@ -55,9 +55,9 @@ bool connectToServer(BLEAddress pAddress) {
     Serial.println(" - Found our characteristic");
 
     // Read the value of the characteristic.
-    std::string value = pRemoteCharacteristic->readValue();
-    Serial.print("The characteristic value was: ");
-    Serial.println(value.c_str());
+    // std::string value = pRemoteCharacteristic->readValue();
+    // Serial.print("The characteristic value was: ");
+    // Serial.println(value.c_str());
 
     pRemoteCharacteristic->registerForNotify(notifyCallback);
 
