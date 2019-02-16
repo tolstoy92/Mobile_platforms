@@ -1,5 +1,8 @@
+.pio
 .pioenvs
 .piolibdeps
-.vscode
-.yml
+.clang_complete
+.gcc-flags.json
 .ini
+.yml
+.vscode
