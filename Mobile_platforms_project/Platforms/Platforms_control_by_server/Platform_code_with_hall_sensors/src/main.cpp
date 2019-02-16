@@ -23,16 +23,20 @@ int totalInterruptCounter = 0;
 int encoderRightCnt = 0;
 int encoderLeftCnt = 0;
 
+const char *msg = "HI";
+
+double duration;
+
 float minSpeed = 0;
 float maxSpeed = 1;
 float minControlSignal = 100;
-float maxControlSignal = 200;
+float maxControlSignal = 185;
 float maxError = 0.5;
 float rightSpeed = 0;
 float leftSpeed = 0;
 float controlSignal;
 
-float kp = 3;
+float kp = 10;
 float kd = 0.2;
 float ki = 0.3;
 
@@ -68,7 +72,6 @@ short errorValue;
 short hallSensorLeft = 0;
 short hallSensorRight = 0;
 
-uint8_t topic_id = 2;
 uint8_t finishValue = -1;
 uint8_t resolution = 10;
 uint8_t splitindex;
@@ -78,17 +81,21 @@ uint8_t rotateValue = -1;
 uint8_t moveForwardValue = -1;
 uint8_t platformNumber = 2;
 
-// const char* ssid = "SPEECH_405";
-// const char* password = "multimodal";
-// const char* mqtt_server = "192.168.0.105";
+const char* ssid = "SPEECH_405";
+const char* password = "multimodal";
+const char* mqtt_server = "192.168.0.61";
 
-const char* ssid = "iGarage";
-const char* password = "igarage18";
-const char* mqtt_server = "10.1.30.38";
+// const char* ssid = "iGarage";
+// const char* password = "igarage18";
+// const char* mqtt_server = "10.1.30.38";
 
-// const char* ssid = "service_iG";
-// const char* password = "1213141516igarage";
-// const char* mqtt_server = "192.168.1.65";
+// const char* ssid = "zal";
+// const char* password = "012345678";
+// const char* mqtt_server = "192.168.0.18";
+
+// const char* ssid = "IGORK";
+// const char* password = "12312322";
+// const char* mqtt_server = "192.168.137.1";
 
 mqttClient mqtt(ssid, password, mqtt_server);
 
@@ -140,17 +147,11 @@ void anglePid()
 
 void callback(char* topic, byte* message, unsigned int length)
 {
-    char angleTopic[64];
-    char finishTopic[64];
-    char moveTopic[64];
-    char rotateTopic[64];
+    char platformControlTopic[64];
 
-    sprintf(angleTopic, "platforms/%d", platformNumber);
-    sprintf(finishTopic, "platforms/%d/on_finish", platformNumber);
-    sprintf(moveTopic, "platforms/%d/move", platformNumber);
-    sprintf(rotateTopic, "platforms/%d/rotate", platformNumber);
-
-    if (strcmp(topic, angleTopic)==0) {
+    sprintf(platformControlTopic, "platforms/%d", platformNumber);
+    
+    if (strcmp(topic, platformControlTopic)==0) {
 
         receivedData = "";
         sign = "";
@@ -160,11 +161,11 @@ void callback(char* topic, byte* message, unsigned int length)
         finish = "";
        
         int digit_sign;
-
+        
         for (int i = 0; i < length; i++)
-        {
-            receivedData += (char)message[i];
-            //correctValue = atoi(receivedData.c_str());   
+            {
+                receivedData += (char)message[i]; 
+            } 
             sign = receivedData[0];
             angle = receivedData.substr(1, 3);
             move = receivedData[4];
@@ -182,53 +183,8 @@ void callback(char* topic, byte* message, unsigned int length)
             moveForwardValue = atoi(move.c_str());
             rotateValue = atoi(rotate.c_str());
             finishValue = atoi(finish.c_str());
-        }    
-        Serial.println(correctValue);
-        Serial.println(moveForwardValue);
-        Serial.println(rotateValue );
-        Serial.println(finishValue);
-    }
-
-    // if ((strcmp(topic, moveTopic)==0)) {
-
-    //     receivedData = "";
-
-    //     for (int i = 0; i < length; i++)
-    //     {
-    //         receivedData += (char)message[i];
-    //         moveForwardValue = atoi(receivedData.c_str()); 
-    //     }
-    //     Serial.println(moveForwardValue);
-         
-    // }
-
-    // if ((strcmp(topic, finishTopic)==0)) {
-
-    //     receivedData = "";
-
-    //     for (int i = 0; i < length; i++)
-    //     {
-    //         receivedData += (char)message[i];
-    //         finishValue = atoi(receivedData.c_str()); 
-    //     }
-    //     Serial.println(finishValue);
-         
-    // }
-
-    // if (strcmp(topic, rotateTopic)==0) {
-
-    //     receivedData = "";
-
-    //     for (int i = 0; i < length; i++)
-    //     {
-    //         receivedData += (char)message[i];
-    //         rotateValue = atoi(receivedData.c_str());    
-    //     }
-    //     Serial.println(rotateValue);
-    // }
-    
-    
-}
+        } 
+} 
 
 float yPidControl(float yCorrectValue)
 {
@@ -257,79 +213,58 @@ void setup()
     mqtt.setupWifi();
     mqtt.setCallback(*callback);
     init_Timer();
+    mqtt.subscribe(platformNumber);
     DriveCar.setup(PIN_ENABLE_R,PIN_FORWARD_R,PIN_BACK_R,PIN_FORWARD_L,PIN_BACK_L,PIN_ENABLE_L, channel_R, channel_L);
     DriveCar.setupMotorDriver(channel_R, channel_L, frequency, resolution);
     pinMode(PIN_HALL_L, INPUT);
     pinMode(PIN_HALL_R, INPUT);
 }
 
-void driveMotor(short correctValue)
-{
-    DriveCar.controlByCamera(correctValue, reduceSpeed, reduceSpeedSide);
-}
-
 void loop()
 {
-    while (finishValue != 1) {
-        mqtt.initClientLoop();
-        mqtt.subscribe(topic_id);
+    if (finishValue != 1) {
 
-        if (moveForwardValue == 1 && rotateValue == 0) {
-            
-            doEncoderRight();
-            doEncoderLeft();
-
-            if (interruptCounter > 0) {
-
-                portENTER_CRITICAL(&timerMux);
-                interruptCounter--;
-                rightSpeed = encoderRightCnt;
-                leftSpeed = encoderLeftCnt;
-                encoderRightCnt = 0;
-                encoderLeftCnt = 0;
-                portEXIT_CRITICAL(&timerMux);
-
-                totalInterruptCounter++;
-
-                Serial.println(rightSpeed/6);
-                Serial.println(leftSpeed/6);
-
-                errorRightWheel = targetSpeed - rightSpeed/6;
-                errorLeftWheel = targetSpeed - leftSpeed/6;
-
-                yRight = yPidControl(errorRightWheel);
-                yLeft = yPidControl(errorLeftWheel);
-
-                uRight = uPidControl(yRight);
-                uLeft = uPidControl(yLeft);
-
-                //Serial.println(yRight);
-                //Serial.println(yLeft);
-
-                //Serial.println(uRight);
-                //Serial.println(uLeft);
-
-                DriveCar.moveForward(uRight, uLeft);
-                //Serial.println(uRight);
-            }
+    mqtt.initClientLoop();
+    if (moveForwardValue == 1 && rotateValue == 0) {
+        
+        doEncoderRight();
+        doEncoderLeft();
+        if (interruptCounter > 0) {
+            portENTER_CRITICAL(&timerMux);
+            interruptCounter--;
+            rightSpeed = encoderRightCnt;
+            leftSpeed = encoderLeftCnt;
+            encoderRightCnt = 0;
+            encoderLeftCnt = 0;
+            portEXIT_CRITICAL(&timerMux);
+            totalInterruptCounter++;
+            errorRightWheel = targetSpeed - rightSpeed/6;
+            errorLeftWheel = targetSpeed - leftSpeed/6;
+            yRight = yPidControl(errorRightWheel);
+            yLeft = yPidControl(errorLeftWheel);
+            uRight = uPidControl(yRight);
+            uLeft = uPidControl(yLeft);
+            DriveCar.moveForward(uRight, uLeft);
         }
-
-        if (rotateValue == 0 && moveForwardValue == 0) {
-
-            DriveCar.stop(correctValue);
+    }
+    if (rotateValue == 0 && moveForwardValue == 0) {
+        DriveCar.stop(correctValue);
+    }
+    
+    if (rotateValue == 1 && moveForwardValue == 0)
+    {
+        DriveCar.stop(correctValue);
+       
+        if (correctValue > 0) {
+        DriveCar.rotateLeft(correctValue);
         }
-     
-        if (rotateValue == 1 && moveForwardValue == 0)
-        {
-            DriveCar.stop(correctValue);
-           
-            if (correctValue > 0) {
-            DriveCar.rotateLeft(correctValue);
-            }
-            else if (correctValue < 0) {
-            DriveCar.rotateRight(correctValue);
-            }
-        }   
+        else if (correctValue < 0) {
+        DriveCar.rotateRight(correctValue);
+        }
+    }   
+    }
+    else if (finishValue == 1) {
+    DriveCar.stop(correctValue);    
     }
 }   
    

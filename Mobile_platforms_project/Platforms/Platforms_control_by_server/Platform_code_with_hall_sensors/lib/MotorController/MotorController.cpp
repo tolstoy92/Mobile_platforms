@@ -63,16 +63,6 @@ void MotorController::rotation(motor* motorStruct, short Speed, short Side)
 		setPinsValuesMotorDriver(motorStruct, LOW, LOW, 0); //двигатель отключен
 	}
 }
-// контроль вращения двигателем на основе данных с джойстика
-void MotorController::controlByCamera(short correctValue, float reduceSpeed, float reduceSpeedSide)
-{
-	rotation(MotorRight, 110, 1);
-	rotation(MotorLeft, 110, 1);
-	delay(correctValue*12);
-	rotation(MotorLeft, 150, 0);
-	rotation(MotorRight,150, 0);
-
-}
 
 void MotorController::rotateLeft(short correctValue)
 {	
@@ -107,36 +97,12 @@ void MotorController::stop(short correctValue)
 	rotation(MotorRight, 0, 0);	
 }
 
-void MotorController::driveMotor(float correctSignal)
-{
-	if (correctSignal >0)
-	{
-		rotation(MotorLeft, 160, 1);
-		rotation(MotorRight, 160*(1-correctSignal), -1);
-	}
-	else if (correctSignal <0)
-	{
-		rotation(MotorLeft, 160*(1+correctSignal), 1);
-		rotation(MotorRight, 160, -1);
-	}
-	else
-	{
-		rotation(MotorLeft, 160, 1);
-		rotation(MotorRight, 160, -1);
-	}
-	
-}
-
 void MotorController::driveMotorOnPlace(float correctSignal)
 {
 	if (correctSignal >0)
 	{
 		rotation(MotorLeft, 300, 1);
 		rotation(MotorRight, 300, 1);
-		// delay(100);
-		// rotation(MotorLeft, 220, 0);
-		// rotation(MotorRight, 220, 0);
-		// delay(420);
 	}
 	else if (correctSignal <0)
 	{
