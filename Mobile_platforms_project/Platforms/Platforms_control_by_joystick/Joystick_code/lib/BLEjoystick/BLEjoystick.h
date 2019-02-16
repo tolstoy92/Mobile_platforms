@@ -7,7 +7,7 @@ class BLEjoystick {
 
     public:
         void BLEjoystickSetup();
-        String GetDataFromJoystick(uint8_t JoystickxPin,uint8_t JoystickyPin);
+        String GetDataFromJoystick(uint8_t JoystickxPin,uint8_t JoystickyPin, uint8_t SolidPin);
         void SendDataFromJoystick(String joystickData);
        
     private:

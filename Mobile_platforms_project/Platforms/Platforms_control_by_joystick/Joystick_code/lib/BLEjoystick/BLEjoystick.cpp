@@ -102,13 +102,13 @@ void BLEjoystick::BLEjoystickSetup() {
 
 } 
 
-String BLEjoystick::GetDataFromJoystick(uint8_t JoystickxPin, uint8_t JoystickyPin) {
+String BLEjoystick::GetDataFromJoystick(uint8_t JoystickxPin, uint8_t JoystickyPin, uint8_t SolidPin) {
 
   xCoordinate = analogRead(JoystickxPin);
   yCoordinate = analogRead(JoystickyPin);
-  String newValue = (String(xCoordinate)+"/"+String(yCoordinate));
-  Serial.println(xCoordinate);
-  Serial.println(yCoordinate);
+  solidStatus = digitalRead(SolidPin);
+  String newValue = (String(xCoordinate) + "/" + String(yCoordinate) + "[" + String(solidStatus));
+  Serial.println(newValue);
   Serial.println("/");
   return(newValue);
 } 

@@ -8,18 +8,19 @@ String joystickData = "";
 
 uint8_t JoystickxPin = 33;
 uint8_t JoystickyPin = 32;
-uint8_t SolidPin = 23;
+uint8_t SolidPin = 15;
 
 BLEjoystick Joystick;
 
 void setup() {
 
 	Joystick.BLEjoystickSetup();
+	pinMode(SolidPin, INPUT);
 	
 } 
 void loop() {
 
-	joystickData = Joystick.GetDataFromJoystick(JoystickxPin, JoystickyPin);
+	joystickData = Joystick.GetDataFromJoystick(JoystickxPin, JoystickyPin, SolidPin);
 	Joystick.SendDataFromJoystick(joystickData);
 
 } 
