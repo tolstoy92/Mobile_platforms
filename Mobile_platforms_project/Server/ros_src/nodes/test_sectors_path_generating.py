@@ -15,7 +15,7 @@ map = ImageMap()
 map.set_map_params(IMAGE_SIZE, IMAGE_SIZE, MAP_ROWS, MAP_COLUMNS)
 map.create_sectors()
 
-path_points_num = 5
+path_points_num = 5000
 
 final_msg = AllPathes()
 

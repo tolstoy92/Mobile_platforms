@@ -30,12 +30,12 @@ class Visualizer():
                 cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
                 self.IMG = cv_image
                 self.draw_objects()
-                self.draw_paths()
-                self.clear_field_objects()
-                self.clear_paths()
-                if self.do_draw_map:
+                #self.draw_paths()
+                #self.clear_field_objects()
+                #self.clear_paths()
+                '''if self.do_draw_map:
                     self.draw_map()
-                    self.draw_sectors_num()
+                    self.draw_sectors_num()'''
                 cv2.imshow("img22", self.IMG)
                 if cv2.waitKey(3) & 0xFF == ord("d"):
                     self.do_draw_map = not self.do_draw_map
@@ -83,7 +83,7 @@ class Visualizer():
                              (int(robot.direction.x), int(robot.direction.y)), color=(100, 100, 255), thickness=3)
                     cv2.putText(self.IMG, str(robot.id), (int(robot.center.x) + 5, int(robot.center.y)),
                                 cv2.FONT_HERSHEY_PLAIN, 2,
-                                (255, 100, 60), 3)
+                               (255, 100, 60), 3)
                     if robot.actual_point:
                         self.draw_crest(robot.actual_point, color=(100, 255, 50))
                         cv2.putText(self.IMG, str(robot.id), (int(robot.actual_point.x) + 5, int(robot.actual_point.y)), cv2.FONT_HERSHEY_PLAIN, 2,
@@ -94,7 +94,7 @@ class Visualizer():
                         if self.do_draw_map:
                             center = self.map.get_sector_center(*robot.sector)
                             self.draw_rectangle(center, self.map.sector_w)
-                            # cv2.circle(self.IMG, center(), self.map.sector_h//2, (0, 0, 255), 2)
+                            cv2.circle(self.IMG, center(), self.map.sector_h//2, (0, 0, 255), 2)
             for obstacle in self.fields_objects.obstacles:
                 self.draw_point(obstacle.center)
             for goal in self.fields_objects.goals:
