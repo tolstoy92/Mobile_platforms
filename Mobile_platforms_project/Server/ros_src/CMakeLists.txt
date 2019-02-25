@@ -25,6 +25,7 @@ add_message_files (
   RobotMovement.msg
   XML_PATH.msg
   Step.msg
+  WheelRotationData.msg
 )
 
 
