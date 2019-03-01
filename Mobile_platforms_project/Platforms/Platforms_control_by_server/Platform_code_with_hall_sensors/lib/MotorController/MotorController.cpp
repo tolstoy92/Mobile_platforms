@@ -63,36 +63,26 @@ void MotorController::rotation(motor* motorStruct, short Speed, short Side)
 		setPinsValuesMotorDriver(motorStruct, LOW, LOW, 0); //двигатель отключен
 	}
 }
-// контроль вращения двигателем на основе данных с джойстика
-void MotorController::controlByCamera(short correctValue, float reduceSpeed, float reduceSpeedSide)
-{
-	rotation(MotorRight, 110, 1);
-	rotation(MotorLeft, 110, 1);
-	delay(correctValue*12);
-	rotation(MotorLeft, 150, 0);
-	rotation(MotorRight,150, 0);
-
-}
 
 void MotorController::rotateLeft(short correctValue)
 {	
-	rotation(MotorRight, 120, 1);
-	rotation(MotorLeft, 120, 1);
+	rotation(MotorRight, 250, 1);
+	rotation(MotorLeft, 250, 1);
+	delay(120);
+	rotation(MotorLeft, 0, 0);
+	rotation(MotorRight,0, 0);
 	delay(80);
-	rotation(MotorLeft, 150, 0);
-	rotation(MotorRight,150, 0);
 
 }
 
 void MotorController::rotateRight(short correctValue)
 {	
-	rotation(MotorRight, 120, -1);
-	rotation(MotorLeft, 120, -1);
+	rotation(MotorRight, 250, -1);
+	rotation(MotorLeft, 250, -1);
+	delay(120);
+	rotation(MotorLeft, 0, 0);
+ 	rotation(MotorRight,0, 0);
 	delay(80);
-	// delay(-correctValue*12);
-	rotation(MotorLeft, 150, 0);
- 	rotation(MotorRight,150, 0);
-
 }
 
 void MotorController::moveForward(short correctValueRight, short correctValueLeft)
@@ -103,29 +93,26 @@ void MotorController::moveForward(short correctValueRight, short correctValueLef
 
 void MotorController::stop(short correctValue)
 {
-	rotation(MotorLeft, 180, 0);
-	rotation(MotorRight, 180, 0);	
+	rotation(MotorLeft, 0, 0);
+	rotation(MotorRight, 0, 0);	
 }
 
-void MotorController::driveMotor(float correctSignal)
+void MotorController::driveMotorOnPlace(float correctSignal)
 {
 	if (correctSignal >0)
 	{
-		rotation(MotorLeft, 160, 1);
-		rotation(MotorRight, 160*(1-correctSignal), -1);
-		Serial.println(150*(1-correctSignal));
+		rotation(MotorLeft, 300, 1);
+		rotation(MotorRight, 300, 1);
 	}
 	else if (correctSignal <0)
 	{
-		rotation(MotorLeft, 160*(1+correctSignal), 1);
-		rotation(MotorRight, 160, -1);
-		Serial.println(150*(1+correctSignal));	
+		rotation(MotorLeft, 300, -1);
+		rotation(MotorRight, 300, -1);
 	}
 	else
 	{
-		rotation(MotorLeft, 160, 1);
-		rotation(MotorRight, 160, -1);
-		Serial.println(150);
+		rotation(MotorLeft, 160, 0);
+		rotation(MotorRight, 160, 0);
 	}
 	
 }

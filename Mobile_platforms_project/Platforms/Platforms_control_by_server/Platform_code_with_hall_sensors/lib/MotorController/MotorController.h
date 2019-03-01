@@ -22,23 +22,21 @@ private:
 
 public:
 //Задаем подключеные соответствующие контакты, для правого и левого двигателей, в очередности pinUpRight, pinDownRight, pinSpeedRight, pinUpLeft, pinDownLeft, pinSpeedLeft
+	int channel;
+
 	void setup(uint8_t pinEnableR, uint8_t pinForwardR, uint8_t pinBackR , uint8_t pinForwardL, uint8_t pinBackL, uint8_t pinEnableL, uint8_t channel_Right, uint8_t channel_Left);
 
 	void rotation(motor* motorStruct, short Speed, short Side);
-	// контроль вращения двигателем на основе данных с джойстика
-	void controlByCamera(short correctValue, float reduceSpeed, float reduceSpeedSide);
 
 	void rotateLeft(short correctValue);
-	// номер канала
+
 	void rotateRight(short correctValue);
 
 	void stop(short correctValue);
 
 	void moveForward(short correctValueRight, short correctValueLeft);
 
-    void driveMotor(float controlSignal);
-
-	int channel;
+	void driveMotorOnPlace(float controlSignal);
 
 	void setupMotorDriver(uint8_t channel_Right, uint8_t channel_Left, short frequency, uint8_t resolution);
 };

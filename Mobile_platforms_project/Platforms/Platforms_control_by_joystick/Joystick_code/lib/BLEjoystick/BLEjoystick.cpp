@@ -55,9 +55,9 @@ bool connectToServer(BLEAddress pAddress) {
     Serial.println(" - Found our characteristic");
 
     // Read the value of the characteristic.
-    std::string value = pRemoteCharacteristic->readValue();
-    Serial.print("The characteristic value was: ");
-    Serial.println(value.c_str());
+    // std::string value = pRemoteCharacteristic->readValue();
+    // Serial.print("The characteristic value was: ");
+    // Serial.println(value.c_str());
 
     pRemoteCharacteristic->registerForNotify(notifyCallback);
 
@@ -102,7 +102,18 @@ void BLEjoystick::BLEjoystickSetup() {
 
 } 
 
-void BLEjoystick::GetDataFromJoystick(uint8_t JoystickxPin, uint8_t JoystickyPin) {
+String BLEjoystick::GetDataFromJoystick(uint8_t JoystickxPin, uint8_t JoystickyPin, uint8_t SolidPin) {
+
+  xCoordinate = analogRead(JoystickxPin);
+  yCoordinate = analogRead(JoystickyPin);
+  solidStatus = digitalRead(SolidPin);
+  String newValue = (String(xCoordinate) + "/" + String(yCoordinate) + "[" + String(solidStatus));
+  Serial.println(newValue);
+  Serial.println("/");
+  return(newValue);
+} 
+
+void BLEjoystick::SendDataFromJoystick(String joystickData) {
 
   if (doConnect == true) {
     if (connectToServer(*pServerAddress)) {
@@ -116,16 +127,7 @@ void BLEjoystick::GetDataFromJoystick(uint8_t JoystickxPin, uint8_t JoystickyPin
 
   if (connected) {
 
-    String newValue = (String(xCoordinate)+"/"+String(yCoordinate));
-    Serial.println(xCoordinate);
-    Serial.println(yCoordinate);
-    Serial.println("/");
-  
-    pRemoteCharacteristic->writeValue(newValue.c_str());
-
+    pRemoteCharacteristic->writeValue(joystickData.c_str());
+    delay(10);
   }
-  xCoordinate = analogRead(JoystickxPin);
-  yCoordinate = analogRead(JoystickyPin);
-  delay(50);
-
-} 
+}

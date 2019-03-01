@@ -7,10 +7,9 @@ class BLEjoystick {
 
     public:
         void BLEjoystickSetup();
-        void GetDataFromJoystick(uint8_t JoystickxPin,uint8_t JoystickyPin);
-        //void SetupUUID(std::string ServiceUUID, std::string CharUUID);
-        //std::string serviceUUID;
-        //std::string charUUID;
+        String GetDataFromJoystick(uint8_t JoystickxPin,uint8_t JoystickyPin, uint8_t SolidPin);
+        void SendDataFromJoystick(String joystickData);
+       
     private:
         short xCoordinate;
         short yCoordinate;
