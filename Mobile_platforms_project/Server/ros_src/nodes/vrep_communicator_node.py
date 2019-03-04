@@ -2,7 +2,7 @@
 
 import rospy
 from vrep_communicator.VrepCommunicator import Vrep
-from platforms_server.msg import RobotData, GoalData, ObstacleData, FieldObjects
+from platforms_server.msg import RobotData, GoalData, ObstacleData, FieldObjects, RobotMovement
 
 
 def prepare_robot_msg(robots):
@@ -16,7 +16,6 @@ def prepare_robot_msg(robots):
         goal_msgs.append(msg)
     return goal_msgs
 
-
 def prepare_goal_msg(goals):
     robot_msgs = []
     for id in goals:
@@ -26,7 +25,6 @@ def prepare_goal_msg(goals):
         msg.corners = goals[id][1]
         robot_msgs.append(msg)
     return robot_msgs
-
 
 def prepare_obstacle_msg(obstacles):
     obstacle_msgs = []
@@ -38,19 +36,41 @@ def prepare_obstacle_msg(obstacles):
         obstacle_msgs.append(msg)
     return obstacle_msgs
 
+def prepare_point_msg(robot, goal, velocity):
+    point_data_msg = RobotMovement()
+    point_data_msg.id = robot.id
+    point_data_msg.goal = goal
+    point_data_msg.velocity = velocity
+    return point_data_msg
+
 
 rospy.init_node("vrep_communicator_node")
-vrep_data_publisher = rospy.Publisher("field_objects", FieldObjects)
+vrep_data_pub = rospy.Publisher("field_objects", FieldObjects)
+point_data_pub = rospy.Publisher("point_data", RobotMovement)
+rows = 13
+cols = 13
+velo = 2
+
 vrep_con = Vrep()
 objects_msg = FieldObjects()
+point_data_msg = RobotMovement()
+
 robots_data = vrep_con.get_robots_data()
 goal_data = vrep_con.get_goal_data()
 obstacles_data = vrep_con.get_obstacles_data()
+cell_mas = vrep_con.create_mesh(rows, cols)
 
-objects_msg.source = "vrep"
 objects_msg.robots = prepare_robot_msg(robots_data)
 objects_msg.goals = prepare_goal_msg(goal_data)
 objects_msg.obstacles = prepare_obstacle_msg(obstacles_data)
-vrep_data_publisher.publish(objects_msg)
+
+robot = objects_msg.robots[0]
+target = cell_mas[8][3]
+point_msg = prepare_point_msg(robot, target, velo)
+
 vrep_con.finish_connection()
+
+point_data_pub.publish(point_msg)
+vrep_data_pub.publish(objects_msg)
+
 rospy.spin()

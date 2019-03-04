@@ -1,4 +1,3 @@
-import rospy
 from vision.Fileds_objects import Robot, Goal, Obstacle, Marker
 from vision.vision_constants import EPS
 from math import sqrt
@@ -10,24 +9,6 @@ class MarkersAnalizer:
         self.robots = {}
         self.goals = {}
         self.obstacles = {}
-        rospy.init_node("markers_analizer_node")
-        self.markers_data_sub = rospy.Subscriber("detected_markers", ArucoData, self.field_objects_callback)
-        self.paths_data_sub = rospy.Subscriber("paths_data", AllPathes, self.paths_callback)
-        self.field_objects_pub = rospy.Publisher("field_objects", FieldObjects_msg, queue_size=30)
-
-    def recognize_fields_object_by_id(self, msg_data):
-        ids = []
-        corners = []
-        for object in msg_data.markers:
-            ids.append(object.id)
-            corners.append(object.corners)
-        markers_dict = dict(zip(ids, corners))
-        self.parse_fields_objects_by_id(markers_dict)
-        robots = self.get_robots()
-        goals = self.get_goals()
-        obstacles = self.get_obstacles()
-
-        return robots, goals, obstacles
 
     def field_objects_callback(self, msg_data):
         self.clear_obstacles()
@@ -45,6 +26,19 @@ class MarkersAnalizer:
         for id in paths_dict:
             self.robots[id].set_path(paths_dict[id])
 
+    def recognize_fields_object_by_id(self, msg_data):
+        ids = []
+        corners = []
+        for object in msg_data.markers:
+            ids.append(object.id)
+            corners.append(object.corners)
+        markers_dict = dict(zip(ids, corners))
+        self.parse_fields_objects_by_id(markers_dict)
+        robots = self.get_robots()
+        goals = self.get_goals()
+        obstacles = self.get_obstacles()
+        return robots, goals, obstacles
+
     def get_robots(self):
         return self.robots
 
@@ -57,22 +51,36 @@ class MarkersAnalizer:
     def set_pathes(self, pathes):
         self.pathes = pathes
 
+    def update_robots_data(self, key, obj_dict):
+        if key not in self.robots.keys():
+            self.robots[key] = Robot(key, obj_dict[key])
+        else:
+            self.robots[key].update_data(obj_dict[key])
+
+    def update_goals_data(self, key, obj_dict, tmp_dict):
+        tmp_dict[key] = Goal(key, obj_dict[key])
+        return tmp_dict
+
+    def update_obstacles_data(self, key, obj_dict, tmp_dict):
+        if key // 10 not in tmp_dict:
+            tmp_dict[key // 10] = [Marker(key // 10, obj_dict[key])]
+        else:
+            tmp_dict[key // 10].append(Marker(key // 10, obj_dict[key]))
+        return tmp_dict
+
+
     def parse_fields_objects_by_id(self, objects_dict):
         tmp_obstacles_dict = {}
         tmp_goals_dict = {}
+
         for key in objects_dict.keys():
             if len(str(key)) == 1:
-                if key not in self.robots.keys():
-                    self.robots[key] = Robot(key, objects_dict[key])
-                else:
-                    self.robots[key].update_data(objects_dict[key])
+                self.update_robots_data(key, objects_dict)
             elif len(str(key)) == 3:
-                tmp_goals_dict[key] = Goal(key, objects_dict[key])
+                tmp_goals_dict = self.update_goals_data(key, objects_dict, tmp_goals_dict)
             else:
-                if key//10 not in tmp_obstacles_dict:
-                    tmp_obstacles_dict[key//10] = [Marker(key//10, objects_dict[key])]
-                else:
-                    tmp_obstacles_dict[key // 10].append(Marker(key//10, objects_dict[key]))
+                tmp_obstacles_dict = self.update_obstacles_data(key, objects_dict, tmp_obstacles_dict)
+
         for key in tmp_obstacles_dict.keys():
             self.obstacles[key] = Obstacle(key, tmp_obstacles_dict[key])
 

@@ -42,7 +42,7 @@ aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_250)
 parameters = aruco.DetectorParameters_create()
 
 rospy.init_node("aruco_detector_node")
-markers_data_publisher = rospy.Publisher("detected_markers", ArucoData, queue_size=5)
+markers_data_publisher = rospy.Publisher("detected_markers", ArucoData, queue_size=1)
 image_sub = rospy.Subscriber("square_image", Image, callback)
 
 rospy.spin()

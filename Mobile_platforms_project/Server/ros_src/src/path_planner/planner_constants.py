@@ -11,7 +11,7 @@ PLANNER_TYPE = 'rrtconnect'
 PLANNER_RANGE = 0.05
 RUN_TIME = 1
 INIT_SPEED = 2
-ROTATION_SPEED = 0.5
+ROTATION_SPEED = 0.1
 
 kp = 0.01
 ki = 0.0001
@@ -26,6 +26,6 @@ iMin = -0.2
 iMax = 0.2
 
 
-platform_target = {2: 246}
+platform_target = {2: 246, 3:247, 4:248}
 
 vrep_platforms_target = {}
