@@ -2,9 +2,8 @@ from numpy import array
 from math import degrees, sqrt, acos
 from matplotlib.path import Path
 from copy import deepcopy
-from vision.vision_constants import IMAGE_SIZE, HIGH_BOUNDS, LOW_BOUNDS, EPS, MAP_COLUMNS, MAP_ROWS
+from vision.vision_constants import IMAGE_SIZE, HIGH_BOUNDS, LOW_BOUNDS, EPS, MAP_COLUMNS, MAP_ROWS, ANGLE_EPS
 from platforms_server.msg import RobotData, GoalData, ObstacleData, Point2d
-import time
 
 
 class Point:
@@ -18,6 +17,9 @@ class Point:
     def __repr__(self):
         return str(self.x) + " " + str(self.y)
 
+    def __call__(self, type_of=int):
+        return type_of(self.x), type_of(self.y)
+
     def set_x(self, x):
         self.x = x
 
@@ -28,14 +30,8 @@ class Point:
         self.x = x
         self.y = y
 
-    def get_x(self):
-        return self.x
-
-    def get_y(self):
-        return self.y
-
-    def get_xy(self):
-        return self.x, self.y
+    def get_distance_to(self, point):
+        return sqrt((point.x - self.x) ** 2 + (point.y - self.y) ** 2)
 
     def remap_to_ompl_coord_system(self):
         ompl_x = self.x * (HIGH_BOUNDS - LOW_BOUNDS) / IMAGE_SIZE + LOW_BOUNDS
@@ -103,7 +99,6 @@ class Robot(Marker):
         self.center = self.get_center()
         self.direction = self.get_direction()
         self.sector = None
-        self.path_created = False
         self.path = []
         self.actual_point = None
         self.angle_to_actual_point = None
@@ -114,6 +109,7 @@ class Robot(Marker):
         self.map.set_map_params(IMAGE_SIZE, IMAGE_SIZE, MAP_ROWS, MAP_COLUMNS)
         self.map.create_sectors()
 
+        self.path_created = False
         self.on_finish = False
         self.move_forward = False
         self.self_rotation = False
@@ -157,59 +153,43 @@ class Robot(Marker):
         return msg
 
     def update_data(self, corners):
-        self.update_corners(corners)
-        self.update_position()
-        self.update_direction()
-        self.update_sector()
-        if self.path_created and not self.on_finish:
-            if not self.actual_point:
-                self.update_actual_point()
-            self.update_angle_to_actual_point()
-            if self.on_point():
-                if not isinstance(self.angle_to_next_point, type(None)):
-                    self.actual_angle = self.angle_to_next_point
-                    if abs(self.angle_to_next_point) < 5:
-                        self.update_actual_point()
-                        self.move()
-                    else:
-                        self.rotation()
-            else:
-                if not isinstance(self.angle_to_actual_point, type(None)):
-                    self.actual_angle = self.angle_to_actual_point
-                    if abs(self.angle_to_actual_point) < 20:
+        if not self.on_finish:
+            self.update_corners(corners)
+            self.update_position()
+            self.update_direction()
+            self.update_sector()
+            if self.path_created:
+                if not self.actual_point: self.update_actual_point()
+                self.update_angles()
+                if self.on_point():
+                    self.update_actual_point()
+                else:
+                    if abs(self.angle_to_actual_point) < ANGLE_EPS:
                         self.move()
                     else:
                         self.rotation()
 
 
 
-
-
-            # if not self.on_finish:
-            #     if not self.on_point():
-            #         if self.angle_to_actual_point > 5:
-            #             self.rotation()
-            #         else:
-            #             self.move()
-            #     else:
-            #         if self.angle_to_next_point > 5:
-            #             self.rotation()
-            #         else:
-            #             self.actual_point = None
-            #             self.update_actual_point()
-            #             self.update_angle_to_actual_point()
-
-
-
-            # if self.angle_to_actual_point > 3:
-            #     self.rotation()
-            # else:
-            #     self.move()
-            # if self.actual_point:
-            #     if self.on_point():
-            #         self.stop()
-            # else:
-            #     self.on_finish = True
+                    # if self.angle_to_next_point:
+                    #     self.actual_angle = self.angle_to_next_point
+                    #     if abs(self.angle_to_next_point) < ANGLE_EPS:
+                    #         self.update_actual_point()
+                    #         self.move()
+                    #     else:
+                    #         self.rotation()
+                    # else:
+                    #     self.on_finish = True
+                # else:
+                #     if self.angle_to_actual_point:
+                #         self.actual_angle = self.angle_to_actual_point
+                #         if abs(self.angle_to_actual_point) < ANGLE_EPS:
+                #             self.move()
+                #         else:
+                #             self.rotation()
+        else:
+            self.self_rotation = False
+            self.move_forward = False
 
     def update_position(self):
         self.center = self.get_center()
@@ -226,25 +206,22 @@ class Robot(Marker):
 
     def on_point(self):
         if self.actual_point:
-            if Robot.get_distance_between_pts(self.center, self.actual_point) <= EPS:
-                return True
-            else:
-                return False
-        else:
-            return False
+            distance_to_point = Robot.get_distance_between_pts(self.center, self.actual_point)
+            return distance_to_point <= EPS
+        else: return False
 
     def update_actual_point(self):
         if self.path_created:
-            if len(self.path):
+            try:
                 self.actual_point = self.path.pop(0)
-                if len(self.path):
+                try:
                     self.next_point = self.path[0]
-                else:
+                except:
                     self.next_point = None
-            else:
+            except:
                 self.on_finish = True
 
-    def update_angle_to_actual_point(self):
+    def update_angles(self):
         if self.actual_point:
             self.angle_to_actual_point = self.get_angle_to_point(self.actual_point)
         if self.next_point:
@@ -317,14 +294,14 @@ class Robot(Marker):
         projection = self.get_projection_of_direction_pt_on_trajectory(destination_point)
         if self.center.x <= destination_point.x:
             if self.direction.y >= projection.y:
-                result_angle = -angle
-            else:
                 result_angle = angle
+            else:
+                result_angle = -angle
         else:
             if self.direction.y >= projection.y:
-                result_angle = angle
-            else:
                 result_angle = -angle
+            else:
+                result_angle = angle
         return result_angle
 
 
@@ -393,9 +370,7 @@ class Obstacle:
         init_corner = corners.pop(0)
         sorted_corners = [init_corner]
         while len(corners) != 1:
-            distances = []
-            for corner in corners:
-                distances.append(self.get_distance_between_pts(init_corner, corner))
+            distances = list(self.get_distance_between_pts(init_corner, corner) for corner in corners)
             init_corner = corners.pop(distances.index(min(distances)))
             sorted_corners.append(init_corner)
         sorted_corners.append(corners[0])

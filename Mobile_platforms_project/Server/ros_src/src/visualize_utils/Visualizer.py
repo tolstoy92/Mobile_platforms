@@ -19,28 +19,27 @@ class Visualizer():
         self.map.set_map_params(IMAGE_SIZE, IMAGE_SIZE, MAP_ROWS, MAP_COLUMNS)
         self.map.create_sectors()
         self.do_draw_map = False
-
+        self.RUN = True
         rospy.init_node("visualizer_node")
         img_sub = rospy.Subscriber("square_image", Image, self.img_callback)
         field_objects_sub = rospy.Subscriber("field_objects", FieldObjects_msg, self.objects_callback)
 
     def img_callback(self, data):
-        if not rospy.is_shutdown():
+        if not rospy.is_shutdown() and self.RUN:
             try:
                 cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
                 self.IMG = cv_image
                 self.draw_objects()
-                self.draw_paths()
-                self.clear_field_objects()
-                self.clear_paths()
-                if self.do_draw_map:
-                    self.draw_map()
-                    self.draw_sectors_num()
                 cv2.imshow("img22", self.IMG)
                 if cv2.waitKey(3) & 0xFF == ord("d"):
                     self.do_draw_map = not self.do_draw_map
+                elif cv2.waitKey(3) & 0xFF == 27:
+                    self.RUN = not self.RUN
             except CvBridgeError as e:
                 print(e)
+        else:
+            cv2.destroyAllWindows()
+            rospy.on_shutdown()
 
     def draw_point(self, point, color=(255, 0, 100), size=3):
         cv2.circle(self.IMG, (int(point.x), int(point.y)), 1, color, thickness=size)
@@ -81,14 +80,20 @@ class Visualizer():
                     self.draw_point(robot.direction, color=(50, 50, 250), size=5)
                     cv2.line(self.IMG, (int(robot.center.x), int(robot.center.y)),
                              (int(robot.direction.x), int(robot.direction.y)), color=(100, 100, 255), thickness=3)
+                    cv2.putText(self.IMG, str(robot.id), (int(robot.center.x) + 5, int(robot.center.y)),
+                                cv2.FONT_HERSHEY_PLAIN, 2,
+                               (255, 100, 60), 3)
                     if robot.actual_point:
                         self.draw_crest(robot.actual_point, color=(100, 255, 50))
+                        cv2.putText(self.IMG, str(robot.id), (int(robot.actual_point.x) + 5, int(robot.actual_point.y)), cv2.FONT_HERSHEY_PLAIN, 2,
+                                    (255, 100, 60), 3)
                     if robot.next_point:
                         self.draw_crest(robot.next_point, color=(255, 50, 50))
                     if robot.sector:
                         if self.do_draw_map:
                             center = self.map.get_sector_center(*robot.sector)
-                            cv2.circle(self.IMG, center.get_xy(), self.map.sector_h//2, (0, 0, 255), 2)
+                            self.draw_rectangle(center, self.map.sector_w)
+                            cv2.circle(self.IMG, center(), self.map.sector_h//2, (0, 0, 255), 2)
             for obstacle in self.fields_objects.obstacles:
                 self.draw_point(obstacle.center)
             for goal in self.fields_objects.goals:
@@ -105,9 +110,20 @@ class Visualizer():
 
     def draw_paths(self):
         if self.pathes:
+            print(self.pathes)
             for path in self.pathes.paths_list:
                 for pt in path.path_points:
                     self.draw_point(pt, size=5)
+
+    def draw_rectangle(self, center, width):
+        points = []
+        points.append((int(center.x - width // 2), int(center.y - width // 2)))
+        points.append((int(center.x + width // 2), int(center.y - width // 2)))
+        points.append((int(center.x + width // 2), int(center.y + width // 2)))
+        points.append((int(center.x - width // 2), int(center.y + width // 2)))
+        for i in range(len(points)):
+            cv2.line(self.IMG, points[i], points[i - 1], (255, 200, 40), 2)
+
 
     def start_spin(self):
         rospy.spin()
