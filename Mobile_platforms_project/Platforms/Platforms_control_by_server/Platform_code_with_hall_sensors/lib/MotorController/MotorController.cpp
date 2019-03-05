@@ -66,8 +66,8 @@ void MotorController::rotation(motor* motorStruct, short Speed, short Side)
 
 void MotorController::rotateLeft(short correctValue)
 {	
-	rotation(MotorRight, 250, 1);
-	rotation(MotorLeft, 250, 1);
+	rotation(MotorRight, 300, 1);
+	rotation(MotorLeft, 300, 1);
 	delay(120);
 	rotation(MotorLeft, 0, 0);
 	rotation(MotorRight,0, 0);
@@ -77,8 +77,8 @@ void MotorController::rotateLeft(short correctValue)
 
 void MotorController::rotateRight(short correctValue)
 {	
-	rotation(MotorRight, 250, -1);
-	rotation(MotorLeft, 250, -1);
+	rotation(MotorRight, 300, -1);
+	rotation(MotorLeft, 300, -1);
 	delay(120);
 	rotation(MotorLeft, 0, 0);
  	rotation(MotorRight,0, 0);

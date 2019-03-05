@@ -5,6 +5,7 @@
 #include <MqttClient.h>
 #include <PubSubClient.h>
 #include "math.h"
+#include <Wire.h>
 
 #define PIN_ENABLE_R 13
 #define PIN_FORWARD_R 12
@@ -30,7 +31,7 @@ double duration;
 float minSpeed = 0;
 float maxSpeed = 1;
 float minControlSignal = 100;
-float maxControlSignal = 185;
+float maxControlSignal = 200;
 float maxError = 0.5;
 float rightSpeed = 0;
 float leftSpeed = 0;
@@ -83,19 +84,19 @@ uint8_t platformNumber = 2;
 
 const char* ssid = "SPEECH_405";
 const char* password = "multimodal";
-const char* mqtt_server = "192.168.0.61";
+const char* mqtt_server = "192.168.0.105";
 
 // const char* ssid = "iGarage";
 // const char* password = "igarage18";
 // const char* mqtt_server = "10.1.30.38";
 
-// const char* ssid = "zal";
-// const char* password = "012345678";
-// const char* mqtt_server = "192.168.0.18";
+// const char* ssid = "moto";
+// const char* password = "1122334455";
+// const char* mqtt_server = "192.168.43.229";
 
-// const char* ssid = "IGORK";
-// const char* password = "12312322";
-// const char* mqtt_server = "192.168.137.1";
+// const char* ssid = "Redmi";
+// const char* password = "qweqweqw";
+// const char* mqtt_server = "192.168.43.229";
 
 mqttClient mqtt(ssid, password, mqtt_server);
 
