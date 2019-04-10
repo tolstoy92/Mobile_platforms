@@ -42,6 +42,8 @@ float mZ = 0;
 float targetZ = 0;
 float errorY = 0;
 
+bool moveSide = true;
+
 const char* ssid = "SPEECH_405";
 const char* password = "multimodal";
 const char* mqtt_server = "192.168.0.105";
@@ -105,19 +107,11 @@ void setup()
     #endif
     GyroRobot = MotorControl();
     GyroRobot.setupMotor();
-    // mqtt.setupWifi();
-    // mqtt.setCallback(*callback);
-    // mqtt.subscribe(platformNumber);
+    mqtt.setupWifi();
+    mqtt.setCallback(*callback);
+    mqtt.subscribe(platformNumber);
     mySensor.setWire(&Wire);
-    mySensor.beginAccel();
-    mySensor.beginGyro();
     mySensor.beginMag();
-
-  // You can set your own offset for mag values
-  // mySensor.magXOffset = -50;
-  // mySensor.magYOffset = -55;
-    mySensor.magZOffset = +207;
-
     sensorId = mySensor.readId();
 
 }
@@ -125,79 +119,121 @@ void setup()
 void loop()
 {
     GyroRobot.enableCentralMotor();
-    // mqtt.initClientLoop();
-    // if (moveForwardValue == 1 && rotateValue == 0) {
-    //     GyroRobot.goForward(speed);
-    // }
-    // if (rotateValue == 0 && moveForwardValue == 0) {
-    //     GyroRobot.stopMovement();
-    // }
-    // if (rotateValue == 1 && moveForwardValue == 0)
-    // {
-    //    GyroRobot.stopMovement();
-    //     if (correctValue > 0) {
-    //     GyroRobot.turnLeft(speed);
-    //     }
-    //     else if (correctValue < 0) {
-    //     GyroRobot.turnRight(speed);
-    //     }
-    // }   
-    // else if (finishValue == 1) {
-    // GyroRobot.stopMovement();
-    // }
+    mqtt.initClientLoop();
+    if (correctValue <= 90 && correctValue >= -90) {
+        if (moveForwardValue == 1 && rotateValue == 0) {
+            if ((mY > (constY - 8)) && (mY < (constY + 10))) {
+            GyroRobot.goForward(speed*0.7);
+            }
+            else if (mY <= (constY - 8)) {
+            GyroRobot.goForward(speed*1.2);
+            }
+            else if (mY >= (constY + 10)) {
+            GyroRobot.goForward(speed*0.4);
+            }
+        }
+        if (rotateValue == 0 && moveForwardValue == 0) {
+            GyroRobot.stopMovement();
+        }
+        if (rotateValue == 1 && moveForwardValue == 0)
+        {
+            GyroRobot.stopMovement();
+            if (correctValue > 0) {
+                if ((mY > (constY - 8)) && (mY < (constY + 10))) {
+                    GyroRobot.turnLeft(speed*0.6);
+                }
+                else if (mY <= (constY - 8)) {
+                    GyroRobot.turnLeft(speed);
+                }
+                else if (mY >= (constY + 10)) {
+                    GyroRobot.turnLeft(speed*0.4);
+                }
+            }
+            else if (correctValue < 0) {
+                if ((mY > (constY - 8)) && (mY < (constY + 10))) {
+                    GyroRobot.turnRight(speed*0.6);
+                }
+                else if (mY <= (constY - 8)) {
+                    GyroRobot.turnRight(speed);
+                }
+                else if (mY >= (constY + 10)) {
+                    GyroRobot.turnRight(speed*0.4);
+                }
+            }
+        }   
+        else if (finishValue == 1) {
+            GyroRobot.stopMovement();
+        }
+    }
+    else if (correctValue >= 90 || correctValue <= -90) {
+        if (moveForwardValue == 1 && rotateValue == 0) {
+            if ((mY > (constY - 10)) && (mY < (constY + 8))) {
+            GyroRobot.goBackward(speed*0.7);
+            }
+            else if (mY >= (constY + 8)) {
+            GyroRobot.goBackward(speed*1.2);
+            }
+            else if (mY <= (constY - 10)) {
+            GyroRobot.goBackward(speed*0.4);
+            }
+        }
+        if (rotateValue == 0 && moveForwardValue == 0) {
+            GyroRobot.stopMovement();
+        }
+        if (rotateValue == 1 && moveForwardValue == 0)
+        {
+           GyroRobot.stopMovement();
+           if (correctValue > 0) {
+                if ((mY > (constY - 10)) && (mY < (constY + 8))) {
+                    GyroRobot.turnRight(speed*0.6);
+                }
+                else if (mY <= (constY - 10)) {
+                    GyroRobot.turnRight(speed*0.4);
+                }
+                else if (mY >= (constY + 8)) {
+                    GyroRobot.turnRight(speed);
+                }
+            }
+            else if (correctValue < 0) {
+                if ((mY > (constY - 10)) && (mY < (constY + 8))) {
+                    GyroRobot.turnLeft(speed*0.6);
+                }
+                else if (mY <= (constY - 10)) {
+                    GyroRobot.turnLeft(speed*0.4);
+                }
+                else if (mY >= (constY + 8)) {
+                    GyroRobot.turnLeft(speed);
+                }
+            }
+        }   
+        else if (finishValue == 1) {
+            GyroRobot.stopMovement();
+        }    
+    }
     //mqtt.pubFeedback(outputData,platformNumber);
 
-    //Serial.println("sensorId: " + String(sensorId));
-
-    mySensor.accelUpdate();
-    aX = mySensor.accelX();
-    aY = mySensor.accelY();
-    aZ = mySensor.accelZ();
-    aSqrt = mySensor.accelSqrt();
-    Serial.println("accelX: " + String(aX));
-    Serial.println("accelY: " + String(aY));
-    Serial.println("accelZ: " + String(aZ));
-    Serial.println("accelSqrt: " + String(aSqrt));
-
-
-    mySensor.gyroUpdate();
-    gX = mySensor.gyroX();
-    gY = mySensor.gyroY();
-    gZ = mySensor.gyroZ();
-    Serial.println("gyroX: " + String(gX));
-    Serial.println("gyroY: " + String(gY));
-    Serial.println("gyroZ: " + String(gZ));
-  
     mySensor.magUpdate();
-    mX = mySensor.magX();
     mY = mySensor.magY();
-    mZ = mySensor.magZ();
-
     mDirection = mySensor.magHorizDirection();
-    Serial.println("magX: " + String(mX));
-    Serial.println("maxY: " + String(mY));
-    Serial.println("magZ: " + String(mZ));
-    Serial.println("mZsum: " + String(targetZ));
-    Serial.println("horizontal direction: " + String(mDirection));
-  
+    Serial.println("magY: " + String(mY));
     Serial.println("at " + String(millis()) + "ms");
-    Serial.println(""); // Add an empty line 
+    Serial.println(""); 
     if (constY == -1000) {
         constY = mY;
     }
     Serial.println(constY);
-    if ((mY > (constY - 10)) && (mY < (constY + 10))) {
-        GyroRobot.goForward(speed*0.7);
-        Serial.println("Move");
-    }
-    else if (mY <= (constY - 10)) {
-        GyroRobot.goForward(speed*1.2);
-        Serial.println("goBackward");
-    }
-    else if (mY >= (constY + 10)) {
-        GyroRobot.goBackward(speed*1.2);
-        Serial.println("goForward");
-    }
-    
-}   
+    // if ((mY > (constY - 8)) && (mY < (constY + 10))) {
+    //     GyroRobot.turnLeft(speed*0.6);
+    //     Serial.println("Move");
+    // }
+    // else if (mY <= (constY - 8)) {
+    //     GyroRobot.turnLeft(speed);
+    //     Serial.println("goBackward");
+    // }
+    // else if (mY >= (constY + 10)) {
+    //     GyroRobot.turnLeft(speed*0.4);
+    //     Serial.println("goForward");
+    // }
+}
+  
 
