@@ -44,13 +44,17 @@ float errorY = 0;
 
 bool moveSide = true;
 
-const char* ssid = "SPEECH_405";
-const char* password = "multimodal";
-const char* mqtt_server = "192.168.0.105";
+// const char* ssid = "SPEECH_405";
+// const char* password = "multimodal";
+// const char* mqtt_server = "192.168.0.105";
 
-// const char* ssid = "iGarage";
-// const char* password = "igarage18";
-// const char* mqtt_server = "10.1.30.45";
+const char* ssid = "iGarage";
+const char* password = "igarage18";
+const char* mqtt_server = "172.16.30.38";
+
+// const char* ssid = "Redmi";
+// const char* password = "qweqweqw";
+// const char* mqtt_server = "192.168.43.229";
 
 mqttClient mqtt(ssid, password, mqtt_server);
 MotorControl GyroRobot;
@@ -234,6 +238,15 @@ void loop()
     //     GyroRobot.turnLeft(speed*0.4);
     //     Serial.println("goForward");
     // }
+    // GyroRobot.goForward(50);
+    // delay(5000);
+    // GyroRobot.turnLeft(50);
+    // delay(5000);
+    // GyroRobot.turnRight(50);
+    // delay(5000);
+    // GyroRobot.goBackward(50);
+    // delay(5000);
+    
 }
   
 

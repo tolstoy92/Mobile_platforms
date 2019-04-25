@@ -5,9 +5,9 @@
 
 #define Direction_pin (10u) 
 #define Baud_rate (1000000ul) 
-#define ID_1 (3u) 
-#define ID_3 (2u) 
-#define ID_2 (1u)
+#define ID_2 (1u) 
+#define ID_1 (2u) 
+#define ID_3 (3u)
 
 void MotorControl::enableCentralMotor()
 {
@@ -88,10 +88,8 @@ void MotorControl::rotateToAngle(short targetAngle, short wheelRaduis, short rob
     }
 }
 
-void MotorControl::moveToDistance(short targetAngle, short wheelRaduis, short robotRadius)
+void MotorControl::moveToDistance(short targetAngle)
 {
-    ax12a.move(ID_3, targetAngle); 
-    ax12a.move(ID_1, targetAngle);
 }
 
 float MotorControl::calculateAngle(short currentXcoordinate, short currentYcoordinate, short currentDirectionVectorXcoordinate, 
