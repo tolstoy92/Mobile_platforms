@@ -16,7 +16,7 @@ class MotorControl
 
         void rotateToAngle(short targetAngle, short wheelRaduis, short robotRadius);
 
-        void moveToDistance(short targetAngle, short wheelRaduis, short robotRadius);
+        void moveToDistance(short targetAngle);
     
         void setupMotor();
 

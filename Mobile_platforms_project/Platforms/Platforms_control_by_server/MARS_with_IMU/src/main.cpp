@@ -44,17 +44,13 @@ float errorY = 0;
 
 bool moveSide = true;
 
-// const char* ssid = "SPEECH_405";
-// const char* password = "multimodal";
-// const char* mqtt_server = "192.168.0.105";
+const char* ssid = "SPEECH_405";
+const char* password = "multimodal";
+const char* mqtt_server = "192.168.0.61";
 
-const char* ssid = "iGarage";
-const char* password = "igarage18";
-const char* mqtt_server = "172.16.30.38";
-
-// const char* ssid = "Redmi";
-// const char* password = "qweqweqw";
-// const char* mqtt_server = "192.168.43.229";
+// const char* ssid = "iGarage";
+// const char* password = "igarage18";
+// const char* mqtt_server = "10.1.30.45";
 
 mqttClient mqtt(ssid, password, mqtt_server);
 MotorControl GyroRobot;
@@ -130,10 +126,10 @@ void loop()
             GyroRobot.goForward(speed*0.7);
             }
             else if (mY <= (constY - 8)) {
-            GyroRobot.goForward(speed*1.2);
+            GyroRobot.goForward(speed*0.5);
             }
             else if (mY >= (constY + 10)) {
-            GyroRobot.goForward(speed*0.4);
+            GyroRobot.goForward(speed*1.2);
             }
         }
         if (rotateValue == 0 && moveForwardValue == 0) {
@@ -144,24 +140,24 @@ void loop()
             GyroRobot.stopMovement();
             if (correctValue > 0) {
                 if ((mY > (constY - 8)) && (mY < (constY + 10))) {
-                    GyroRobot.turnLeft(speed*0.6);
+                    GyroRobot.turnLeft(speed*0.5);
                 }
                 else if (mY <= (constY - 8)) {
-                    GyroRobot.turnLeft(speed);
+                    GyroRobot.turnLeft(speed*0.5);
                 }
                 else if (mY >= (constY + 10)) {
-                    GyroRobot.turnLeft(speed*0.4);
+                    GyroRobot.turnLeft(speed);
                 }
             }
             else if (correctValue < 0) {
                 if ((mY > (constY - 8)) && (mY < (constY + 10))) {
-                    GyroRobot.turnRight(speed*0.6);
+                    GyroRobot.turnRight(speed*0.5);
                 }
                 else if (mY <= (constY - 8)) {
-                    GyroRobot.turnRight(speed);
+                    GyroRobot.turnRight(speed*0.5);
                 }
                 else if (mY >= (constY + 10)) {
-                    GyroRobot.turnRight(speed*0.4);
+                    GyroRobot.turnRight(speed);
                 }
             }
         }   
@@ -175,10 +171,10 @@ void loop()
             GyroRobot.goBackward(speed*0.7);
             }
             else if (mY >= (constY + 8)) {
-            GyroRobot.goBackward(speed*1.2);
+            GyroRobot.goBackward(speed*0.5);
             }
             else if (mY <= (constY - 10)) {
-            GyroRobot.goBackward(speed*0.4);
+            GyroRobot.goBackward(speed*1.2);
             }
         }
         if (rotateValue == 0 && moveForwardValue == 0) {
@@ -189,10 +185,10 @@ void loop()
            GyroRobot.stopMovement();
            if (correctValue > 0) {
                 if ((mY > (constY - 10)) && (mY < (constY + 8))) {
-                    GyroRobot.turnRight(speed*0.6);
+                    GyroRobot.turnRight(speed*0.5);
                 }
                 else if (mY <= (constY - 10)) {
-                    GyroRobot.turnRight(speed*0.4);
+                    GyroRobot.turnRight(speed*0.5);
                 }
                 else if (mY >= (constY + 8)) {
                     GyroRobot.turnRight(speed);
@@ -200,10 +196,10 @@ void loop()
             }
             else if (correctValue < 0) {
                 if ((mY > (constY - 10)) && (mY < (constY + 8))) {
-                    GyroRobot.turnLeft(speed*0.6);
+                    GyroRobot.turnLeft(speed*0.5);
                 }
                 else if (mY <= (constY - 10)) {
-                    GyroRobot.turnLeft(speed*0.4);
+                    GyroRobot.turnLeft(speed*0.5);
                 }
                 else if (mY >= (constY + 8)) {
                     GyroRobot.turnLeft(speed);
@@ -238,15 +234,6 @@ void loop()
     //     GyroRobot.turnLeft(speed*0.4);
     //     Serial.println("goForward");
     // }
-    // GyroRobot.goForward(50);
-    // delay(5000);
-    // GyroRobot.turnLeft(50);
-    // delay(5000);
-    // GyroRobot.turnRight(50);
-    // delay(5000);
-    // GyroRobot.goBackward(50);
-    // delay(5000);
-    
 }
   
 
